@@ -35,6 +35,8 @@ import Swal from 'sweetalert2';
 import Icon from '@mdi/react';
 import { mdiClipboardListOutline, mdiDoctor, mdiPencil, mdiDelete, mdiAlertCircleOutline } from '@mdi/js';
 import { motion } from 'framer-motion';
+import BaseUrl from '../../api';
+
 
 const PlansManagement = () => {
   const [plans, setPlans] = useState([]);
@@ -73,12 +75,12 @@ const PlansManagement = () => {
         if (!token || !organizationId) {
           throw new Error('No authorization token or organization ID found');
         } else {
-          url = 'https://rough-1-gcic.onrender.com/api/organization/plans'
+          url = `${BaseUrl}/api/organization/plans`
         }
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans`;
       }
 
       const response = await axios.get(
@@ -124,7 +126,7 @@ const PlansManagement = () => {
 
       if (adminPortal === 'true' && token) {
         const response = await axios.get(
-          'https://rough-1-gcic.onrender.com/api/clinicistPlan',
+          `${BaseUrl}/api/clinicistPlan`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -157,11 +159,11 @@ const PlansManagement = () => {
 
       let url;
       if (role === 'organization') {
-        url = `https://rough-1-gcic.onrender.com/api/organization/plan/${planId}`;
+        url = `${BaseUrl}/api/organization/plan/${planId}`;
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans/${planId}`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans/${planId}`;
       }
 
       const response = await axios.get(
@@ -228,11 +230,11 @@ const PlansManagement = () => {
 
       let url;
       if (role === 'organization') {
-        url = `https://rough-1-gcic.onrender.com/api/organization/plan/${planId}`
+        url = `${BaseUrl}/api/organization/plan/${planId}`
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans/${planId}`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans/${planId}`;
       }
 
       const response = await axios.put(
@@ -288,13 +290,13 @@ const PlansManagement = () => {
       let url;
       if (role === 'organization') {
         url = updatedPlan.id
-          ? `https://rough-1-gcic.onrender.com/api/organization/plan/${updatedPlan.id}`
-          : 'https://rough-1-gcic.onrender.com/api/organization/create-plan';
+          ? `${BaseUrl}/api/organization/plan/${updatedPlan.id}`
+          : `${BaseUrl}/api/organization/create-plan`;
       } else {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
         url = updatedPlan.id
-          ? `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans/${updatedPlan.id}`
-          : `https://rough-1-gcic.onrender.com/api/${baseUrl}/create-plan`;
+          ? `${BaseUrl}/api/${baseUrl}/portal-plans/${updatedPlan.id}`
+          : `${BaseUrl}/api/${baseUrl}/create-plan`;
       }
 
       const method = updatedPlan.id ? 'put' : 'post';
@@ -369,12 +371,12 @@ const PlansManagement = () => {
             throw new Error('No authorization token or organization ID found');
           }
           else {
-            url = `https://rough-1-gcic.onrender.com/api/organization/plan/${selectedPlan.id}`
+            url = `${BaseUrl}/api/organization/plan/${selectedPlan.id}`
           }
         }
         else if (role === 'Admin' || role === 'assistant') {
           const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-          url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans/${selectedPlan.id}`;
+          url = `${BaseUrl}/api/${baseUrl}/portal-plans/${selectedPlan.id}`;
         }
 
         // Optimistically update the UI
@@ -432,7 +434,7 @@ const PlansManagement = () => {
       }
 
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/clinicistPlan',
+        `${BaseUrl}/api/clinicistPlan`,
         planData,
         {
           headers: {

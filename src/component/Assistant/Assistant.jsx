@@ -42,13 +42,15 @@ import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import Swal from 'sweetalert2';
 import EmailIcon from '@mui/icons-material/Email';
 import { mdiAlertCircleOutline } from '@mdi/js';
 import { Row, Col } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Close as CloseIcon } from '@mui/icons-material';
+import BaseUrl from '../../api';
+
 
 // MetricCard component
 const MetricCard = ({ title, value, icon, gradient, percentage }) => (
@@ -680,7 +682,7 @@ const AssistantPage = () => {
   const fetchAssistants = async () => {
     try {
       const token = sessionStorage.getItem('token');
-      const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/assistants', {
+      const response = await axios.get(`${BaseUrl}/api/admin/assistants`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -811,7 +813,7 @@ const AssistantPage = () => {
 
       const token = sessionStorage.getItem('token');
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/assistant/register',
+        `${BaseUrl}/api/assistant/register`,
         {
           name: selectedAssistant.name,
           email: selectedAssistant.email,
@@ -886,7 +888,7 @@ const AssistantPage = () => {
         setLoading(true);
         const token = sessionStorage.getItem('token');
         const response = await axios.delete(
-          `https://rough-1-gcic.onrender.com/api/admin/assistants/${assistantId}`,
+          `${BaseUrl}/api/admin/assistants/${assistantId}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -921,7 +923,7 @@ const AssistantPage = () => {
       if (selectedAssistant._id) {
         // Update existing assistant
         const response = await axios.put(
-          `https://rough-1-gcic.onrender.com/api/admin/assistants/${selectedAssistant._id}`,
+          `${BaseUrl}/api/admin/assistants/${selectedAssistant._id}`,
           {
             name: selectedAssistant.name,
             email: selectedAssistant.email
@@ -938,7 +940,7 @@ const AssistantPage = () => {
       } else {
         // Create new assistant
         const response = await axios.post(
-          'https://rough-1-gcic.onrender.com/api/assistant/register',
+          `${BaseUrl}/api/assistant/register`,
           {
             name: selectedAssistant.name,
             email: selectedAssistant.email,

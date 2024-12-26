@@ -27,6 +27,8 @@ import {
 } from '@mui/material';
 import Icon from '@mdi/react';
 import { mdiShieldAccount, mdiPencil, mdiDelete, mdiAlertCircleOutline } from '@mdi/js';
+import BaseUrl from '../../api';
+
 
 const StyledDashboard = styled('div')(({ theme }) => ({
   background: 'linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%)',
@@ -143,7 +145,7 @@ const Permissions = () => {
   const fetchAssistants = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/assistants', {
+      const response = await axios.get(`${BaseUrl}/api/admin/assistants`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -171,7 +173,7 @@ const Permissions = () => {
       setActionLoading(true);
       try {
         const response = await axios.get(
-          `https://rough-1-gcic.onrender.com/api/admin/assistants/permissions/${selected.value}`,
+          `${BaseUrl}/api/admin/assistants/permissions/${selected.value}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -238,7 +240,7 @@ const Permissions = () => {
         setActionLoading(true);
         try {
           const response = await axios.put(
-            `https://rough-1-gcic.onrender.com/api/admin/assistants/permissions/${selectedAssistant.value}`,
+            `${BaseUrl}/api/admin/assistants/permissions/${selectedAssistant.value}`,
             { permissions },
             { headers: { Authorization: `Bearer ${token}` } }
           );

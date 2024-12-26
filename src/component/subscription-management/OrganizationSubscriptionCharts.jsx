@@ -8,6 +8,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { styled } from '@mui/material/styles';
 import { format, startOfYear, endOfYear } from 'date-fns';
+import BaseUrl from '../../api';
+
 
 const StyledDatePicker = styled(DatePicker)(({ theme }) => ({
   '& .MuiInputBase-root': {
@@ -59,7 +61,7 @@ const OrganizationSubscriptionCharts = () => {
     const token = sessionStorage.getItem('token');
 
     try {
-      const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/detailed-subscription-counts-month-wise', {
+      const response = await axios.get(`${BaseUrl}/api/admin/detailed-subscription-counts-month-wise`, {
         headers: {
           'Authorization': `Bearer ${token}`
         },

@@ -14,6 +14,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
 import { lighten, darken } from '@mui/material/styles';
+import BaseUrl from '../../api';
+
 
 // Styled components
 // const StyledButton = styled(Button)(({ theme }) => ({
@@ -636,7 +638,7 @@ const BodyAssessments = () => {
     if (adminPortal === 'true' && token) {
       try {
         setLoading(true);
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/body', {
+        const response = await axios.get(`${BaseUrl}/api/admin/body`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -714,11 +716,11 @@ const BodyAssessments = () => {
 
         let response;
         if (bodyPartModalMode === 'add') {
-          response = await axios.post('https://rough-1-gcic.onrender.com/api/admin/body', bodyPartData, {
+          response = await axios.post(`${BaseUrl}/api/admin/body`, bodyPartData, {
             headers: { Authorization: `Bearer ${token}` }
           });
         } else if (bodyPartModalMode === 'edit') {
-          response = await axios.put(`https://rough-1-gcic.onrender.com/api/admin/body/${selectedBodyPart._id}`, bodyPartData, {
+          response = await axios.put(`${BaseUrl}/api/admin/body/${selectedBodyPart._id}`, bodyPartData, {
             headers: { Authorization: `Bearer ${token}` }
           });
         }
@@ -772,7 +774,7 @@ const BodyAssessments = () => {
           setActionLoading(true);
 
           const response = await axios.delete(
-            `https://rough-1-gcic.onrender.com/api/admin/body/${bodyPartId}`,
+            `${BaseUrl}/api/admin/body/${bodyPartId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -813,7 +815,7 @@ const BodyAssessments = () => {
     if (adminPortal === 'true' && token) {
       try {
         setLoading(true);
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/bodytest', {
+        const response = await axios.get(`${BaseUrl}/api/bodytest`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -821,7 +823,7 @@ const BodyAssessments = () => {
           // Map through the assessments and process media URLs if needed
           const processedAssessments = response.data.body.map(assessment => ({
             ...assessment,
-            media: assessment.media ? `https://rough-1-gcic.onrender.com/media/${assessment.media}` : null
+            media: assessment.media ? `${BaseUrl}media/${assessment.media}` : null
           }));
           setBodyAssessments(processedAssessments);
         }
@@ -917,7 +919,7 @@ const BodyAssessments = () => {
       };
 
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/bodytest',
+        `${BaseUrl}/api/bodytest`,
         assessmentData,
         {
           headers: {
@@ -946,7 +948,7 @@ const BodyAssessments = () => {
 
     if (adminPortal === 'true' && token) {
       try {
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/moods', {
+        const response = await axios.get(`${BaseUrl}/api/admin/moods`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -999,14 +1001,14 @@ const BodyAssessments = () => {
 
         let response;
         if (bodyAssessmentModalMode === 'edit') {
-          response = await axios.put(`https://rough-1-gcic.onrender.com/api/bodytest/${newBodyAssessment._id}`, bodyAssessmentData, {
+          response = await axios.put(`${BaseUrl}/api/bodytest/${newBodyAssessment._id}`, bodyAssessmentData, {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json'
             }
           });
         } else {
-          response = await axios.post('https://rough-1-gcic.onrender.com/api/bodytest', bodyAssessmentData, {
+          response = await axios.post(`${BaseUrl}/api/bodytest`, bodyAssessmentData, {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -1045,7 +1047,7 @@ const BodyAssessments = () => {
 
     if (adminPortal === 'true' && token) {
       try {
-        const response = await axios.put(`https://rough-1-gcic.onrender.com/api/bodytest/${id}`, updatedData, {
+        const response = await axios.put(`${BaseUrl}/api/bodytest/${id}`, updatedData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -1071,7 +1073,7 @@ const BodyAssessments = () => {
 
     if (adminPortal === 'true' && token) {
       try {
-        const response = await axios.get(`https://rough-1-gcic.onrender.com/api/bodytest/${id}`, {
+        const response = await axios.get(`${BaseUrl}/api/bodytest/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -1100,7 +1102,7 @@ const BodyAssessments = () => {
 
     if (adminPortal === 'true' && token) {
       try {
-        const response = await axios.delete(`https://rough-1-gcic.onrender.com/api/bodytest/${id}`, {
+        const response = await axios.delete(`${BaseUrl}/api/bodytest/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -1162,7 +1164,7 @@ const BodyAssessments = () => {
           mcqOptions: newBodyAssessment.mcqOptions.map(({ text, color }) => ({ text, color }))
         };
 
-        const response = await axios.put(`https://rough-1-gcic.onrender.com/api/bodytest/${newBodyAssessment._id}`, bodyAssessmentData, {
+        const response = await axios.put(`${BaseUrl}/api/bodytest/${newBodyAssessment._id}`, bodyAssessmentData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -1197,7 +1199,7 @@ const BodyAssessments = () => {
     if (adminPortal === 'true' && token) {
       try {
         setActionLoading(true);
-        const response = await axios.get(`https://rough-1-gcic.onrender.com/api/admin/body/${id}`, {
+        const response = await axios.get(`${BaseUrl}/api/admin/body/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

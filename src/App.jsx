@@ -43,6 +43,7 @@ const App = () => {
         '/general-pages/landing-page',
         '/error-pages/error-404',
         '/error-pages/error-500',
+        '/payment/stripe',
       ];
 
       const isFullPage = fullPageLayoutRoutes.includes(location.pathname);

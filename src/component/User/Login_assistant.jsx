@@ -7,8 +7,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Logo from '../../assets/logo.svg';
 import bg from '../../assets/bg-3.png';
 import { Link, useNavigate } from 'react-router-dom';
+import BaseUrl from '../../api';
 
-const apiUrl = 'https://rough-1-gcic.onrender.com/api/assistant/login';
+
+const apiUrl = `${BaseUrl}/api/assistant/login`;
 
 const AssistantLogin = () => {
   const [email, setEmail] = useState('');

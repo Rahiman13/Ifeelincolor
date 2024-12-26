@@ -51,6 +51,8 @@ import InputBase from '@mui/material/InputBase';
 import Swal from 'sweetalert2';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BaseUrl from '../../api';
+
 
 
 // Add these new styled components at the top after existing styled components
@@ -577,6 +579,7 @@ export default function Component() {
   });
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
+  const [isTableLoading, setIsTableLoading] = useState(false);
 
   // Add API helper function
   const getApiBaseUrl = () => {
@@ -596,8 +599,8 @@ export default function Component() {
     try {
       const token = sessionStorage.getItem('token');
       const baseUrl = getApiBaseUrl();
-      // const response = await fetch(`https://rough-1-gcic.onrender.com/api/${baseUrl}/subscription-counts`, {
-      const response = await fetch(`https://rough-1-gcic.onrender.com/api/patients/join-stats`, {
+      // const response = await fetch(`${BaseUrl}/api/${baseUrl}/subscription-counts`, {
+      const response = await fetch(`${BaseUrl}/api/patients/join-stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -700,7 +703,7 @@ export default function Component() {
       const role = sessionStorage.getItem('role');
       const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
-      const response = await fetch(`https://rough-1-gcic.onrender.com/api/${baseUrl}/get-patients`, {
+      const response = await fetch(`${BaseUrl}/api/${baseUrl}/get-patients`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -746,7 +749,7 @@ export default function Component() {
     try {
       const token = sessionStorage.getItem('token');
       const baseUrl = getApiBaseUrl();
-      const response = await fetch(`https://rough-1-gcic.onrender.com/api/${baseUrl}/subscriptions`, {
+      const response = await fetch(`${BaseUrl}/api/${baseUrl}/subscriptions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -762,6 +765,7 @@ export default function Component() {
           subscriptionType: 'Portal',
           planName: subscription.plan.name,
           details: subscription.plan.details,
+          status: subscription.plan.status,
           startDate: new Date(subscription.startDate).toLocaleDateString(),
           endDate: new Date(subscription.endDate).toLocaleDateString(),
           avatarSrc: subscription.patient.image || "/placeholder-user.jpg",
@@ -790,7 +794,7 @@ export default function Component() {
     try {
       const token = sessionStorage.getItem('token');
       const baseUrl = getApiBaseUrl();
-      const response = await fetch(`https://rough-1-gcic.onrender.com/api/${baseUrl}/doctor-plan-subscriptions-with-details`, {
+      const response = await fetch(`${BaseUrl}/api/${baseUrl}/doctor-plan-subscriptions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -798,22 +802,24 @@ export default function Component() {
       const data = await response.json();
       if (data.status === 'success') {
         const formattedData = data.body.map(item => ({
-          id: item.subscription._id,
-          name: item.patient.userName,
-          email: item.patient.email,
-          mobile: item.patient.mobile,
+          id: item.patient?._id,
+          name: item.patient?.userName,
+          email: item.patient?.email,
+          mobile: item.patient?.mobile,
           subscriptionType: 'Clinician',
           clinician: {
-            name: item.clinician.name,
-            specialization: item.clinician.specializedIn,
-            degree: item.clinician.degree
+            name: item.clinisist?.name,
+            specialization: item.clinisist?.specializedIn,
+            degree: item.clinisist?.degree,
+            licenseNumber: item.clinisist?.licenseNumber
           },
-          planName: item.plan.name,
-          details: item.plan.details,
-          startDate: new Date(item.subscription.startDate).toLocaleDateString(),
-          endDate: new Date(item.subscription.endDate).toLocaleDateString(),
-          avatarSrc: item.patient.image || "/placeholder-user.jpg",
-          avatarFallback: item.patient.userName.split(' ').map(n => n[0]).join(''),
+          planName: item.plan?.name,
+          details: item.plan?.details,
+          status: item.plan?.status,
+          startDate: new Date(item.subscription?.startDate).toLocaleDateString(),
+          endDate: new Date(item.subscription?.endDate).toLocaleDateString(),
+          avatarSrc: item.patient?.image || "/placeholder-user.jpg",
+          avatarFallback: item.patient?.userName.split(' ').map(n => n[0]).join(''),
         }));
         setClinicianPatients(formattedData);
       }
@@ -849,6 +855,8 @@ export default function Component() {
   // Update the getFilteredUsers function
   const getFilteredUsers = () => {
     let users = [];
+    
+    // First, apply the type filter
     switch (filterType) {
       case 'portal':
         users = portalPatients;
@@ -857,24 +865,31 @@ export default function Component() {
         users = clinicianPatients;
         break;
       case 'all':
-        users = [...portalPatients, ...clinicianPatients].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
+        users = [...portalPatients, ...clinicianPatients];
         break;
       default:
         users = [];
     }
 
-    if (!searchQuery) return users;
+    // Then, apply the search filter if there's a search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      return users.filter(user => {
+        const searchFields = [
+          user.name?.toLowerCase(),
+          user.email?.toLowerCase(),
+          user.mobile?.toLowerCase(),
+          user.clinician?.name?.toLowerCase(),
+          user.clinician?.specialization?.toLowerCase(),
+          user.planName?.toLowerCase()
+        ];
+        
+        // Return true if any of the fields contain the search query
+        return searchFields.some(field => field?.includes(query));
+      });
+    }
 
-    return users.filter(user => {
-      const searchString = searchQuery.toLowerCase();
-      const hasMatchingName = user.name.toLowerCase().includes(searchString);
-      const hasMatchingEmail = user.email.toLowerCase().includes(searchString);
-      const hasMatchingClinician = user.clinician?.name?.toLowerCase().includes(searchString);
-
-      return hasMatchingName || hasMatchingEmail || hasMatchingClinician;
-    });
+    return users;
   };
 
   // Add new handler for patient creation
@@ -912,7 +927,7 @@ export default function Component() {
     setIsSubmitting(true);
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch('https://rough-1-gcic.onrender.com/api/auth/patient-register', {
+      const response = await fetch(`${BaseUrl}/api/auth/patient-register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1016,7 +1031,7 @@ export default function Component() {
     try {
       const token = sessionStorage.getItem('token');
 
-      const response = await fetch(`https://rough-1-gcic.onrender.com/api/patients/update-patient-by-admin/${editingPatient.id}`, {
+      const response = await fetch(`${BaseUrl}/api/patients/update-patient-by-admin/${editingPatient.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1095,7 +1110,7 @@ export default function Component() {
   //   try {
   //     const token = sessionStorage.getItem('token');
 
-  //     const response = await fetch(`https://rough-1-gcic.onrender.com/api/patients/delete-patient-by-admin/${patientId}`, {
+  //     const response = await fetch(`${BaseUrl}/api/patients/delete-patient-by-admin/${patientId}`, {
   //       method: 'DELETE',
   //       headers: {
   //         'Authorization': `Bearer ${token}`
@@ -1153,7 +1168,7 @@ export default function Component() {
     if (result.isConfirmed) {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch(`https://rough-1-gcic.onrender.com/api/patients/delete-patient-by-admin/${patientId}`, {
+        const response = await fetch(`${BaseUrl}/api/patients/delete-patient-by-admin/${patientId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1185,6 +1200,32 @@ export default function Component() {
       }
     }
   };
+
+  // Update the useEffect for data fetching
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsTableLoading(true); // Use table-specific loading state
+      try {
+        switch (filterType) {
+          case 'portal':
+            await fetchPortalPatients();
+            break;
+          case 'clinician':
+            await fetchClinicianPatients();
+            break;
+          case 'all':
+            await fetchAllPatients();
+            break;
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsTableLoading(false); // Use table-specific loading state
+      }
+    };
+
+    fetchData();
+  }, [filterType]);
 
   return (
     <DashboardContainer>
@@ -1481,12 +1522,12 @@ export default function Component() {
                       </TableRow>
                     </StyledTableHead>
                     <TableBody>
-                      {isLoading ? (
-                        <StyledTableRow>
-                          <StyledTableCell colSpan={5} align="center">
-                            <CircularProgress sx={{color:'#fff'}} />
-                          </StyledTableCell>
-                        </StyledTableRow>
+                      {isTableLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                            <CircularProgress size={40} />
+                          </TableCell>
+                        </TableRow>
                       ) : (
                         getFilteredUsers()
                           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -1586,6 +1627,9 @@ export default function Component() {
                                       >
                                         {user.clinician?.degree}
                                       </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {user.clinician?.licenseNumber}
+                                      </Typography>
                                     </Box>
                                   </Box>
                                 ) : (
@@ -1595,11 +1639,13 @@ export default function Component() {
 
                               <StyledTableCell>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                  <StatusChip
+                                  {/* <StatusChip
                                     label={new Date(user.endDate) > new Date() ? 'Active' : 'Expired'}
                                     status={new Date(user.endDate) > new Date() ? 'Active' : 'Expired'}
                                     size="small"
-                                  />
+                                  /> */}
+                                  <StatusChip label={user.status || 'N/A'} status={user.status?'Active':'Expired'} size="small" />
+
                                   {/* <Box>
                                     <Typography
                                       variant="caption"

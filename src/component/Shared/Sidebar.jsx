@@ -5,6 +5,8 @@ import '@mdi/font/css/materialdesignicons.min.css';
 import Face1 from '../../assets/face1.jpg'; // Import profile image
 import axios from 'axios';
 import { MdAccountCircle } from 'react-icons/md';
+import BaseUrl from '../../api';
+
 
 const Sidebar = () => {
   const [menuState, setMenuState] = useState({});
@@ -24,7 +26,7 @@ const Sidebar = () => {
     const fetchProfileDetails = async () => {
       if (adminPortal === 'true' && token && role === 'Admin') {
         try {
-          const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/profile', {
+          const response = await axios.get(`${BaseUrl}/api/admin/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (response.data.status === 'success') {
@@ -35,7 +37,7 @@ const Sidebar = () => {
         }
       } else if (role === 'organization' && token) {
         try {
-          const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/me', {
+          const response = await axios.get(`${BaseUrl}/api/organization/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (response.data.status === 'success') {
@@ -46,7 +48,7 @@ const Sidebar = () => {
         }
       } else if (role === 'assistant' && token) {
         try {
-          const response = await axios.get('https://rough-1-gcic.onrender.com/api/assistant/profile', {
+          const response = await axios.get(`${BaseUrl}/api/assistant/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (response.data.status === 'success') {
@@ -67,7 +69,7 @@ const Sidebar = () => {
       if (role === 'assistant' && adminPortal === 'true' && token && assistantId) {
         try {
           const response = await axios.get(
-            `https://rough-1-gcic.onrender.com/api/assistant/get-permissions/${assistantId}`,
+            `${BaseUrl}/api/assistant/get-permissions/${assistantId}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -743,14 +745,14 @@ const Sidebar = () => {
                   </OverlayTrigger>
                 </li> */}
 
-                <li className="nav-item" style={navItemStyle}>
+                {/* <li className="nav-item" style={navItemStyle}>
                   <Link className={isPathActive('/test-management/ai-questions') ? 'nav-link active' : 'nav-link'} to="/test-management/ai-questions"
                     style={navLinkStyle}
                   >
                     <i className='mdi mdi-arrow-right fs-6' style={subMenuIconStyle}></i>
                     <span className=" m-0 p-0">ChatBot</span>
                   </Link>
-                </li>
+                </li> */}
               </ul>
             </Collapse>
           </li>

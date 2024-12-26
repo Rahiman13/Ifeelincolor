@@ -48,6 +48,8 @@ import 'sweetalert2/dist/sweetalert2.css';
 import { createGlobalStyle } from 'styled-components';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
+import BaseUrl from '../../api';
+
 
 // Add this animation keyframe
 const shimmer = keyframes`
@@ -1398,7 +1400,7 @@ const BannerManagementPage = () => {
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://rough-1-gcic.onrender.com/api/announcement');
+      const response = await axios.get(`${BaseUrl}/api/announcement`);
       if (response.data.status === 'success') {
         setAnnouncements(response.data.body);
       } else {
@@ -1427,7 +1429,7 @@ const BannerManagementPage = () => {
       }
 
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/announcement',
+        `${BaseUrl}/api/announcement`,
         form,
         {
           headers: {
@@ -1461,7 +1463,7 @@ const BannerManagementPage = () => {
         preConfirm: async () => {
           try {
             const response = await axios.delete(
-              `https://rough-1-gcic.onrender.com/api/announcement/${id}`
+              `${BaseUrl}/api/announcement/${id}`
             );
             return response.data.status === 'success';
           } catch (error) {
@@ -1501,7 +1503,7 @@ const BannerManagementPage = () => {
       }
 
       const response = await axios.put(
-        `https://rough-1-gcic.onrender.com/api/announcement/${id}`,
+        `${BaseUrl}/api/announcement/${id}`,
         form,
         {
           headers: {

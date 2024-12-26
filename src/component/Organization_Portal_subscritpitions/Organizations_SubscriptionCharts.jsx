@@ -3,6 +3,8 @@ import ReactApexChart from 'react-apexcharts';
 import { Card, Form } from 'react-bootstrap';
 import axios from 'axios';
 import { Typography } from '@mui/material';
+import BaseUrl from '../../api';
+
 
 const ClinicianSubscriptionCharts = () => {
   const [subscriptionData, setSubscriptionData] = useState({});
@@ -20,8 +22,8 @@ const ClinicianSubscriptionCharts = () => {
 
     try {
       const endpoint = role === 'manager'
-        ? 'https://rough-1-gcic.onrender.com/api/manager/subscriptions'
-        : 'https://rough-1-gcic.onrender.com/api/organization/subscriptions';
+        ? `${BaseUrl}/api/manager/subscriptions`
+        : `${BaseUrl}/api/organization/subscriptions`;
 
       const response = await axios.get(endpoint, {
         headers: {
@@ -191,7 +193,7 @@ export default ClinicianSubscriptionCharts;
 //   useEffect(() => {
 //     const token = sessionStorage.getItem('token');
 
-//     axios.get('https://rough-1-gcic.onrender.com/api/organization/subscription-counts', {
+//     axios.get(`${BaseUrl}/api/organization/subscription-counts`, {
 //       headers: {
 //         'Authorization': `Bearer ${token}`
 //       }

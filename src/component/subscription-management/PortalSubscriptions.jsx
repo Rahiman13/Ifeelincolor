@@ -6,7 +6,7 @@ import { Toast, ToastContainer } from 'react-bootstrap';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, CircularProgress, Backdrop, Box, Typography, Avatar, Chip, Tooltip } from '@mui/material';
 import { styled, alpha, ThemeProvider, createTheme } from '@mui/material/styles';
 import './PortalSubscription.scss';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import { mdiMonitor, mdiAlertCircleOutline, mdiMagnify } from '@mdi/js';
 import Icon from '@mdi/react';
 import axios from 'axios';
@@ -17,6 +17,8 @@ import EventBusyIcon from '@mui/icons-material/EventBusy';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CloseIcon from '@mui/icons-material/Close';
+import BaseUrl from '../../api';
+
 
 // Create a theme with the necessary color palette
 const theme = createTheme({
@@ -330,7 +332,8 @@ const SearchContainer = styled(Box)(({ theme }) => ({
 }));
 
 export default function PortalSubscription() {
-  const [subscriptions, setSubscriptions] = useState([]);
+  const [doctorSubscriptions, setDoctorSubscriptions] = useState([]);
+  const [portalSubscriptions, setPortalSubscriptions] = useState([]);
   const [subscriptionCounts, setSubscriptionCounts] = useState({
     active: 0,
     renewal: 0,
@@ -347,36 +350,44 @@ export default function PortalSubscription() {
     const fetchData = async () => {
       const adminPortal = sessionStorage.getItem('adminPortal');
       const token = sessionStorage.getItem('token');
-      const role = sessionStorage.getItem('role');
-      const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
       if (adminPortal === 'true' && token) {
         try {
-          const [subscriptionsResponse, countsResponse] = await Promise.all([
-            axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/subscriptions`, {
+          // Fetch both types of subscriptions in parallel
+          const [doctorResponse, portalResponse] = await Promise.all([
+            axios.get(`${BaseUrl}/api/admin/doctor-plan-subscriptions`, {
               headers: { Authorization: `Bearer ${token}` }
             }),
-            axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/total-subscription-counts`, {
+            axios.get(`${BaseUrl}/api/admin/subscriptions`, {
               headers: { Authorization: `Bearer ${token}` }
             })
           ]);
 
-          if (subscriptionsResponse.data.status === 'success') {
-            setSubscriptions(subscriptionsResponse.data.body);
+          if (doctorResponse.data.status === 'success' && portalResponse.data.status === 'success') {
+            setDoctorSubscriptions(doctorResponse.data.body);
+            setPortalSubscriptions(portalResponse.data.body);
+            
+            // Combine both subscription types for counts
+            const allSubscriptions = [
+              ...doctorResponse.data.body,
+              ...portalResponse.data.body
+            ];
+            
+            // Calculate combined subscription counts
+            const counts = allSubscriptions.reduce((acc, sub) => {
+              if (new Date(sub.endDate) < new Date()) {
+                acc.ended++;
+              } else if (sub.renewal) {
+                acc.renewal++;
+              } else {
+                acc.active++;
+              }
+              return acc;
+            }, { active: 0, renewal: 0, ended: 0 });
+            
+            setSubscriptionCounts(counts);
           } else {
             setToastMessage('Failed to fetch subscriptions');
-            setShowToast(true);
-          }
-
-          if (countsResponse.data.status === 'success') {
-            const { patientSubscription } = countsResponse.data.data;
-            setSubscriptionCounts({
-              active: patientSubscription.active,
-              renewal: patientSubscription.renewal,
-              ended: patientSubscription.ended
-            });
-          } else {
-            setToastMessage('Failed to fetch subscription counts');
             setShowToast(true);
           }
         } catch (error) {
@@ -410,7 +421,13 @@ export default function PortalSubscription() {
   };
 
   const getFilteredSubscriptions = () => {
-    let filtered = [...subscriptions];
+    // Combine both subscription types
+    const allSubscriptions = [
+      ...doctorSubscriptions.map(sub => ({ ...sub, type: 'doctor' })),
+      ...portalSubscriptions.map(sub => ({ ...sub, type: 'portal' }))
+    ];
+
+    let filtered = [...allSubscriptions];
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -426,6 +443,14 @@ export default function PortalSubscription() {
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
     setPage(0); // Reset to first page when searching
+  };
+
+  // Helper function to get combined subscriptions
+  const getAllSubscriptions = () => {
+    return [
+      ...doctorSubscriptions.map(sub => ({ ...sub, type: 'doctor' })),
+      ...portalSubscriptions.map(sub => ({ ...sub, type: 'portal' }))
+    ];
   };
 
   if (loading) {
@@ -638,7 +663,7 @@ export default function PortalSubscription() {
 
               <Row className="mb-4">
                 <Col>
-                  <SubscriptionCharts subscriptions={subscriptions} />
+                  <SubscriptionCharts subscriptions={getAllSubscriptions()} />
                 </Col>
               </Row>
 
@@ -736,7 +761,7 @@ export default function PortalSubscription() {
                             size={0.5}
                             color="rgba(255, 255, 255, 0.6)"
                           />
-                          {`Found ${subscriptions.filter(sub =>
+                          {`Found ${getAllSubscriptions().filter(sub =>
                             sub.patient.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             sub.patient.email?.toLowerCase().includes(searchQuery.toLowerCase())
                           ).length} results`}
@@ -747,8 +772,9 @@ export default function PortalSubscription() {
                       <StyledTableHead>
                         <TableRow>
                           <StyledHeaderCell>Patient Information</StyledHeaderCell>
-                          <StyledHeaderCell>Contact Details</StyledHeaderCell>
-                          <StyledHeaderCell>Subscription Information</StyledHeaderCell>
+                          <StyledHeaderCell>Subscription Type</StyledHeaderCell>
+                          <StyledHeaderCell>Provider Information</StyledHeaderCell>
+                          <StyledHeaderCell>Subscription Details</StyledHeaderCell>
                           <StyledHeaderCell>Status</StyledHeaderCell>
                         </TableRow>
                       </StyledTableHead>
@@ -769,111 +795,92 @@ export default function PortalSubscription() {
                                   <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                                     {sub.patient.userName || '-'}
                                   </Typography>
-                                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                    Member since {new Date(sub.createdAt).toLocaleDateString()}
+                                  <Typography variant="caption" color="text.secondary">
+                                    {sub.patient.email}
+                                  </Typography>
+                                  <Typography variant="caption" display="block" color="text.secondary">
+                                    Phone: {sub.patient.mobile}
                                   </Typography>
                                 </Box>
                               </Box>
                             </StyledTableCell>
 
                             <StyledTableCell>
-                              {/* <DetailBox> */}
-                              <Tooltip title="Send Email" arrow>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                  <EmailIcon fontSize="small" color="primary" />
-                                  <Typography variant="body2" sx={{
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    maxWidth: '200px'
-                                  }}>
-                                    {sub.patient.email || '-'}
-                                  </Typography>
-                                </Box>
-                              </Tooltip>
-                              <Tooltip title="Call Patient" arrow>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <PhoneIcon fontSize="small" color="success" />
-                                  <Typography variant="body2">{sub.patient.mobile || '-'}</Typography>
-                                </Box>
-                              </Tooltip>
-                              {/* </DetailBox> */}
+                              <Chip
+                                label={sub.type === 'doctor' ? 'Doctor Plan' : 'Portal Plan'}
+                                color={sub.type === 'doctor' ? 'primary' : 'secondary'}
+                                sx={{ fontWeight: 'bold' }}
+                              />
                             </StyledTableCell>
 
                             <StyledTableCell>
-                              {/* <DetailBox> */}
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                                <Tooltip title="Subscription Plan" arrow>
-                                  <InfoChip
-                                    label={`${sub.plan.name} - $${sub.plan.price}`}
-                                    $color="linear-gradient(45deg, #1976d2, #64b5f6)"
-                                    $hoverColor="linear-gradient(45deg, #64b5f6, #1976d2)"
-                                  />
-                                </Tooltip>
-                                <Tooltip title="Plan Duration" arrow>
-                                  <InfoChip
-                                    label={`${sub.plan.validity} Days`}
-                                    $color="linear-gradient(45deg, #7b1fa2, #ba68c8)"
-                                    $hoverColor="linear-gradient(45deg, #ba68c8, #7b1fa2)"
-                                  />
-                                </Tooltip>
-                              </Box>
-                              <Box sx={{ display: 'flex', gap: 2 }}>
-                                <Tooltip title="Start Date" arrow>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <CalendarTodayIcon fontSize="small" color="primary" />
-                                    <Typography variant="body2">
-                                      {new Date(sub.startDate).toLocaleDateString()}
+                              {sub.type === 'doctor' && sub.clinisist ? (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <Tooltip title={`Doctor ID: ${sub.clinisist._id}`} arrow>
+                                    <PatientAvatar
+                                      src={sub.clinisist.image}
+                                      alt={sub.clinisist.name}
+                                    >
+                                      {sub.clinisist.name?.charAt(0)}
+                                    </PatientAvatar>
+                                  </Tooltip>
+                                  <Box>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                                      {sub.clinisist.name}
+                                    </Typography>
+                                    <Typography variant="caption" display="block" color="text.secondary">
+                                      {sub.clinisist.specializedIn}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Experience: {sub.clinisist.experience}
                                     </Typography>
                                   </Box>
-                                </Tooltip>
-                                <Tooltip title="End Date" arrow>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <EventBusyIcon fontSize="small" color="error" />
-                                    <Typography variant="body2">
-                                      {new Date(sub.endDate).toLocaleDateString()}
-                                    </Typography>
-                                  </Box>
-                                </Tooltip>
-                              </Box>
-                              {/* </DetailBox> */}
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                  Portal Subscription
+                                </Typography>
+                              )}
                             </StyledTableCell>
 
                             <StyledTableCell>
-                              <Tooltip title={`Subscription ${sub.renewal ? 'up for renewal' : (new Date(sub.endDate) > new Date() ? 'currently active' : 'has expired')}`} arrow>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                                  <StatusChip
-                                    label={sub.renewal ? 'Renewal' : (new Date(sub.endDate) > new Date() ? 'Active' : 'Expired')}
-                                    status={sub.renewal ? 'Renewal' : (new Date(sub.endDate) > new Date() ? 'Active' : 'Expired')}
-                                  />
-                                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                    {new Date(sub.endDate) > new Date()
-                                      ? `${Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24))} days left`
-                                      : 'Subscription ended'}
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                <InfoChip
+                                  label={`${sub.plan.name} - $${sub.plan.price}`}
+                                  $color="linear-gradient(45deg, #1976d2, #64b5f6)"
+                                  $hoverColor="linear-gradient(45deg, #64b5f6, #1976d2)"
+                                />
+                                <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+                                  <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <CalendarTodayIcon fontSize="small" />
+                                    Start: {new Date(sub.startDate).toLocaleDateString()}
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <EventBusyIcon fontSize="small" />
+                                    End: {new Date(sub.endDate).toLocaleDateString()}
                                   </Typography>
                                 </Box>
-                              </Tooltip>
+                              </Box>
+                            </StyledTableCell>
+
+                            <StyledTableCell>
+                              <StatusChip
+                                label={sub.renewal ? 'Renewal' : (new Date(sub.endDate) > new Date() ? 'Active' : 'Expired')}
+                                status={sub.renewal ? 'Renewal' : (new Date(sub.endDate) > new Date() ? 'Active' : 'Expired')}
+                              />
                             </StyledTableCell>
                           </StyledTableRow>
                         ))}
                       </TableBody>
                     </StyledTable>
                     <TablePagination
+                      rowsPerPageOptions={[5, 10, 25]}
                       component="div"
-                      count={subscriptions.filter(sub => {
-                        if (!searchQuery) return true;
-                        const query = searchQuery.toLowerCase();
-                        return sub.patient.userName?.toLowerCase().includes(query) ||
-                          sub.patient.email?.toLowerCase().includes(query);
-                      }).length}
+                      count={getAllSubscriptions().length}
+                      rowsPerPage={rowsPerPage}
                       page={page}
                       onPageChange={handleChangePage}
-                      rowsPerPage={rowsPerPage}
                       onRowsPerPageChange={handleChangeRowsPerPage}
-                      rowsPerPageOptions={[10, 25, 50, 100]}
-                      sx={{
-                        borderTop: '1px solid rgba(224, 224, 224, 1)',
-                        backgroundColor: '#f5f5f5',
-                      }}
                     />
                   </StyledTableContainer>
                 </Col>

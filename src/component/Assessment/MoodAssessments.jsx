@@ -29,6 +29,8 @@ import Swal from 'sweetalert2';
 import { lighten, darken } from '@mui/material/styles';
 import { Assessment as AssessmentIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import BaseUrl from '../../api';
+
 
 const StyledDashboard = styled('div')(({ theme }) => ({
   background: 'linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%)',
@@ -686,7 +688,7 @@ export default function MoodAssessments() {
     if (adminPortal === 'true' && token) {
       try {
         setLoading(true);
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/moods', {
+        const response = await axios.get(`${BaseUrl}/api/admin/moods`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -708,7 +710,7 @@ export default function MoodAssessments() {
     if (adminPortal === 'true' && token) {
       try {
         setLoading(true);
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/sub', {
+        const response = await axios.get(`${BaseUrl}/api/sub`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -730,7 +732,7 @@ export default function MoodAssessments() {
     if (adminPortal === 'true' && token) {
       try {
         setLoading(true);
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/test', {
+        const response = await axios.get(`${BaseUrl}/api/test`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -799,11 +801,11 @@ export default function MoodAssessments() {
         setActionLoading(true);
         let response;
         if (modalMode === 'add') {
-          response = await axios.post('https://rough-1-gcic.onrender.com/api/admin/add-mood', selectedMood, {
+          response = await axios.post(`${BaseUrl}/api/admin/add-mood`, selectedMood, {
             headers: { Authorization: `Bearer ${token}` }
           });
         } else if (modalMode === 'edit') {
-          response = await axios.put(`https://rough-1-gcic.onrender.com/api/admin/moods/${selectedMood._id}`, selectedMood, {
+          response = await axios.put(`${BaseUrl}/api/admin/moods/${selectedMood._id}`, selectedMood, {
             headers: { Authorization: `Bearer ${token}` }
           });
         }
@@ -855,7 +857,7 @@ export default function MoodAssessments() {
           try {
             setActionLoading(true); // Start loading
             const response = await axios.delete(
-              `https://rough-1-gcic.onrender.com/api/admin/moods/${mood._id}`,
+              `${BaseUrl}/api/admin/moods/${mood._id}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`
@@ -978,7 +980,7 @@ export default function MoodAssessments() {
         let response;
         if (modalMode === 'edit' && selectedMoodLevelAssessment._id) {
           response = await axios.put(
-            `https://rough-1-gcic.onrender.com/api/sub/${selectedMoodLevelAssessment._id}`,
+            `${BaseUrl}/api/sub/${selectedMoodLevelAssessment._id}`,
             assessmentData,
             {
               headers: { Authorization: `Bearer ${token}` }
@@ -986,7 +988,7 @@ export default function MoodAssessments() {
           );
         } else {
           response = await axios.post(
-            'https://rough-1-gcic.onrender.com/api/sub',
+            `${BaseUrl}/api/sub`,
             assessmentData,
             {
               headers: { Authorization: `Bearer ${token}` }
@@ -1015,7 +1017,7 @@ export default function MoodAssessments() {
       const adminPortal = sessionStorage.getItem('adminPortal');
 
       if (adminPortal === 'true' && token && selectedAssessment) {
-        const response = await axios.put(`https://rough-1-gcic.onrender.com/api/sub/${selectedAssessment._id}`, selectedAssessment, {
+        const response = await axios.put(`${BaseUrl}/api/sub/${selectedAssessment._id}`, selectedAssessment, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -1053,7 +1055,7 @@ export default function MoodAssessments() {
 
         if (result.isConfirmed) {
           setActionLoading(true);
-          const response = await axios.delete(`https://rough-1-gcic.onrender.com/api/sub/${selectedAssessment._id}`, {
+          const response = await axios.delete(`${BaseUrl}/api/sub/${selectedAssessment._id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
 
@@ -1110,7 +1112,7 @@ export default function MoodAssessments() {
     if (adminPortal === 'true' && token && selectedMoodLevelAssessment) {
       try {
         setActionLoading(true);
-        const response = await axios.put(`https://rough-1-gcic.onrender.com/api/sub/${selectedMoodLevelAssessment._id}`, selectedMoodLevelAssessment, {
+        const response = await axios.put(`${BaseUrl}/api/sub/${selectedMoodLevelAssessment._id}`, selectedMoodLevelAssessment, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -1160,7 +1162,7 @@ export default function MoodAssessments() {
         if (result.isConfirmed) {
           setActionLoading(true);
           const response = await axios.delete(
-            `https://rough-1-gcic.onrender.com/api/sub/${assessmentId}`,
+            `${BaseUrl}/api/sub/${assessmentId}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -1227,7 +1229,7 @@ export default function MoodAssessments() {
     if (adminPortal === 'true' && token) {
       try {
         setActionLoading(true);
-        const response = await axios.post('https://rough-1-gcic.onrender.com/api/sub', newMoodLevelAssessment, {
+        const response = await axios.post(`${BaseUrl}/api/sub`, newMoodLevelAssessment, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -1261,7 +1263,7 @@ export default function MoodAssessments() {
           setActionLoading(true);
 
           const response = await axios.get(
-            `https://rough-1-gcic.onrender.com/api/test/${assessment._id}`,
+            `${BaseUrl}/api/test/${assessment._id}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -1486,7 +1488,7 @@ export default function MoodAssessments() {
 
         const response = await axios({
           method: 'POST',
-          url: 'https://rough-1-gcic.onrender.com/api/test/create',
+          url: `${BaseUrl}/api/test/create`,
           data: finalData,
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -1583,7 +1585,7 @@ export default function MoodAssessments() {
 
         const response = await axios({
           method: 'PUT',
-          url: `https://rough-1-gcic.onrender.com/api/test/${selectedMoodAssessment._id}`,
+          url: `${BaseUrl}/api/test/${selectedMoodAssessment._id}`,
           data: finalData,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1642,7 +1644,7 @@ export default function MoodAssessments() {
         if (result.isConfirmed) {
           setActionLoading(true);
           const response = await axios.delete(
-            `https://rough-1-gcic.onrender.com/api/test/${assessmentId}`,
+            `${BaseUrl}/api/test/${assessmentId}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }

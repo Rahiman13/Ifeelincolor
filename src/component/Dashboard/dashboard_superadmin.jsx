@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import Icon from '@mdi/react';
 import { mdiHome, mdiDoctor, mdiAlertCircleOutline, mdiAccount, mdiDiamond, mdiCashMultiple, mdiDownload, mdiEye } from '@mdi/js';
-import Card_circle from '../../assets/circle.svg'
+import Card_circle from '../../assets/circle.png'
 import {
     Table,
     TableBody,
@@ -39,9 +39,11 @@ import { FaUserMd, FaCalendarAlt, FaDollarSign, FaClock, FaUsers, FaStar, FaChar
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import BaseUrl from '../../api';
 
 // Add this constant at the top of your file, after the imports
-const API_BASE_URL = 'https://rough-1-gcic.onrender.com';
+// const API_BASE_URL = 'https://rough-1-gcic.onrender.com';
+const API_BASE_URL = BaseUrl;
 
 // Add these styled components at the top of your file, after the imports
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({

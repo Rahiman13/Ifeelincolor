@@ -8,10 +8,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Card, Typography, Box, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Avatar, Modal, IconButton, Menu, MenuItem, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, TablePagination, CircularProgress, Backdrop, Chip, Tooltip, Paper } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Menu as MenuIcon, RemoveRedEye as ViewIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import axios from 'axios';
 import { mdiAccountGroup, mdiAlertCircleOutline } from '@mdi/js';
 import { Container } from 'react-bootstrap';
+import BaseUrl from '../../api';
 // import {
 //     FaBuilding,
 //     FaGlobe,
@@ -1262,7 +1263,7 @@ const OrganizationPage = () => {
             const token = sessionStorage.getItem('token');
             const role = sessionStorage.getItem('role');
             const baseUrl = role === 'assistant' ? 'assistant' : 'Admin';
-            const url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/organizations`;
+            const url = `${BaseUrl}/api/${baseUrl}/organizations`;
 
             const response = await axios.get(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -1285,7 +1286,7 @@ const OrganizationPage = () => {
             const role = sessionStorage.getItem('role');
             const baseUrl = role === 'assistant' ? 'assistant' : 'Admin';
 
-            const response = await axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/organization-stats`, {
+            const response = await axios.get(`${BaseUrl}/api/${baseUrl}/organization-stats`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -1307,7 +1308,7 @@ const OrganizationPage = () => {
             const token = sessionStorage.getItem('token');
             const role = sessionStorage.getItem('role');
             const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-            const response = await axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/organizations-counts`, {
+            const response = await axios.get(`${BaseUrl}/api/${baseUrl}/organizations-counts`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -1331,7 +1332,7 @@ const OrganizationPage = () => {
 
             // Fetch the organization details
             const response = await axios.get(
-                `https://rough-1-gcic.onrender.com/api/${baseUrl}/organization/${organization._id}`,
+                `${BaseUrl}/api/${baseUrl}/organization/${organization._id}`,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }
@@ -1366,12 +1367,14 @@ const OrganizationPage = () => {
                 const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
                 // Fixed the syntax error here - added closing bracket for the axios.delete call
-                await axios.delete(`https://rough-1-gcic.onrender.com/api/${baseUrl}/organization/${id}`, {
+                await axios.delete(`${BaseUrl}/api/${baseUrl}/organization/${id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 setOrganizations(organizations.filter(org => org._id !== id));
                 toast.success('Organization deleted successfully');
+                fetchOrganizationStats();
+                fetchOrganizations();
             } catch (error) {
                 console.error('Error deleting organization:', error);
                 toast.error('Failed to delete organization');
@@ -1390,7 +1393,7 @@ const OrganizationPage = () => {
             try {
                 setActionLoading(true);
                 const token = sessionStorage.getItem('token');
-                const response = await axios.post('https://rough-1-gcic.onrender.com/api/organization/register', newOrganization, {
+                const response = await axios.post(`${BaseUrl}/api/organization/register`, newOrganization, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -1417,7 +1420,7 @@ const OrganizationPage = () => {
                 const baseUrl = adminPortal ? 'admin' : 'assistant';
 
                 const response = await axios.put(
-                    `https://rough-1-gcic.onrender.com/api/${baseUrl}/organization/${selectedOrganization._id}`,
+                    `${BaseUrl}/api/${baseUrl}/organization/${selectedOrganization._id}`,
                     selectedOrganization,
                     {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -1510,8 +1513,8 @@ const OrganizationPage = () => {
 
             // Determine API endpoint based on role
             const baseUrl = role === 'Admin'
-                ? 'https://rough-1-gcic.onrender.com/api/admin'
-                : 'https://rough-1-gcic.onrender.com/api/assistant';
+                ? `${BaseUrl}/api/admin`
+                : `${BaseUrl}/api/assistant`;
 
             const response = await axios.get(
                 `${baseUrl}/organization/${organization._id}`,

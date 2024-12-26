@@ -5,9 +5,11 @@ import { mdiShieldAccount, mdiAccountMultiple, mdiChartLine, mdiDotsVertical, md
 import Swal from 'sweetalert2';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Card_circle from '../../assets/circle.svg'
+import Card_circle from '../../assets/circle.png'
 import '../Clinician/ClinicianPage.scss'
 import axios from 'axios';
+import BaseUrl from '../../api';
+
 
 // Metric Card Component
 const MetricCard = ({ title, value, icon, gradient, percentage }) => (
@@ -161,7 +163,7 @@ const AdminModal = ({ open, onClose, onSave, admin }) => {
 
             if (admin) {
                 // Editing existing admin
-                response = await axios.put(`https://rough-1-gcic.onrender.com/api/organization/orgadmin/${admin._id}`, 
+                response = await axios.put(`${BaseUrl}/api/organization/orgadmin/${admin._id}`, 
                     { name: formValues.name, email: formValues.email, mobile: formValues.mobile },
                     {
                         headers: {
@@ -171,7 +173,7 @@ const AdminModal = ({ open, onClose, onSave, admin }) => {
                 );
             } else {
                 // Adding new admin
-                response = await axios.post('https://rough-1-gcic.onrender.com/api/orgadmin/register', formValues, {
+                response = await axios.post(`${BaseUrl}/api/orgadmin/register`, formValues, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -277,7 +279,7 @@ const AdminsPage = () => {
     const fetchAllAdmins = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/orgadmins', {
+            const response = await axios.get(`${BaseUrl}/api/organization/orgadmins`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -302,7 +304,7 @@ const AdminsPage = () => {
     const fetchActiveAdmins = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/orgadmins/active', {
+            const response = await axios.get(`${BaseUrl}/api/organization/orgadmins/active`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -325,7 +327,7 @@ const AdminsPage = () => {
     const fetchAdminCounts = async () => {
         try {
             const token = sessionStorage.getItem('token');
-            const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/orgadmins/counts', {
+            const response = await axios.get(`${BaseUrl}/api/organization/orgadmins/counts`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -378,7 +380,7 @@ const AdminsPage = () => {
                 setActionLoading(true);
                 try {
                     const token = sessionStorage.getItem('token');
-                    await axios.delete(`https://rough-1-gcic.onrender.com/api/organization/orgadmin/${admin._id}`, {
+                    await axios.delete(`${BaseUrl}/api/organization/orgadmin/${admin._id}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },

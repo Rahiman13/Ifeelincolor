@@ -3,7 +3,7 @@ import { Dropdown } from "react-bootstrap";
 import Icon from '@mdi/react';
 import { mdiAccountTie, mdiAccountMultiple, mdiChartLine, mdiPlus, mdiAlertCircleOutline } from '@mdi/js';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
 import { FaEllipsisV } from "react-icons/fa";
@@ -16,6 +16,8 @@ import axios from 'axios';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import BaseUrl from '../../api';
+
 
 const calculatePercentageIncrease = (current, previous) => {
   if (!current || !previous) return '0% of total';
@@ -278,12 +280,12 @@ const ManagersPage = () => {
   const fetchManagers = async () => {
     try {
       const token = sessionStorage.getItem('token');
-      let endpoint = 'https://rough-1-gcic.onrender.com/api/organization/managers';
+      let endpoint = `${BaseUrl}/api/organization/managers`;
 
       if (activeTab === 'active') {
-        endpoint = 'https://rough-1-gcic.onrender.com/api/organization/managers/active';
+        endpoint = `${BaseUrl}/api/organization/managers/active`;
       } else if (activeTab === 'inactive') {
-        endpoint = 'https://rough-1-gcic.onrender.com/api/organization/managers/inactive';
+        endpoint = `${BaseUrl}/api/organization/managers/inactive`;
       }
 
       const response = await axios.get(endpoint, {
@@ -306,7 +308,7 @@ const ManagersPage = () => {
   const fetchManagerCounts = async () => {
     try {
       const token = sessionStorage.getItem('token');
-      const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/managers/counts', {
+      const response = await axios.get(`${BaseUrl}/api/organization/managers/counts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -393,7 +395,7 @@ const ManagersPage = () => {
         setActionLoading(true);
         try {
           const token = sessionStorage.getItem('token');
-          const response = await axios.delete(`https://rough-1-gcic.onrender.com/api/organization/manager/${id}`, {
+          const response = await axios.delete(`${BaseUrl}/api/organization/manager/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
 
@@ -430,7 +432,7 @@ const ManagersPage = () => {
       const token = sessionStorage.getItem('token');
       if (modalType === "edit" && selectedManager) {
         const response = await axios.put(
-          `https://rough-1-gcic.onrender.com/api/organization/manager/${selectedManager._id}`,
+          `${BaseUrl}/api/organization/manager/${selectedManager._id}`,
           {
             name: selectedManager.name || '',
             email: selectedManager.email || '',
@@ -450,7 +452,7 @@ const ManagersPage = () => {
         }
       } else if (modalType === "add" && selectedManager) {
         const response = await axios.post(
-          'https://rough-1-gcic.onrender.com/api/manager/register',
+          `${BaseUrl}/api/manager/register`,
           {
             name: selectedManager.name || '',
             email: selectedManager.email || '',

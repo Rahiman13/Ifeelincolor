@@ -8,6 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import './Navbar.css';
 import { FaUser, FaSignOutAlt } from 'react-icons/fa'; // Add this import
 // import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
+import BaseUrl from '../../api';
+
 
 const dummyAvatar = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMQAAACUCAMAAAD79nauAAAAZlBMVEX///8AAAD8/Pzh4eHExMT19fXn5+f5+fnu7u6pqamHh4d5eXmsrKxHR0fr6+tfX18fHx/R0dE+Pj6bm5tubm62trYsLCzLy8syMjJzc3MXFxfX19cRERE5OTlmZmZZWVmTk5NOTk7ac85mAAAEZklEQVR4nO2cibaiMAyGWWUp+yaiV+H9X3LUGc9VxNIoaeIcvifIf9qkaZrUMFZWVjSSOEEodmeECKPcojYHjleLoWg680bWxtWW2igY+5M5RRO41JYpkwyTEq44XyIjb15rME1hU9ungO9I1uFCzN41/LKSrsOF1qG2Uk4wswp/yTivhXtUkXBhQ23qS+zpuDrFgWuM8nfKGs4xitraaawAoOF8XlDbO0nSgkTELDdUDdJgHkpqgyewUpgIM2W4FBZQg5nV1CY/40FFmCG1yc/4YBEnfpngBiyi4xdl4SLMiNrmJ94Q0XvURo+B+4QpfGqjx4BDLEfPfkNE8T+IaPbURo+xYPnfhYyfCPUbEV8RhgCL+GHnE0YJFhHzE+GARaT8ygU2WAS/w+6NvINf2mEkBUzCgWECaPgVUETH8WoHDU9FTm3yBNDwVCXUFk+wBYroqQ2eYg/LnjhWO84xFlZ5OvE76s74IUhERW3vNKDw1AXU5k4TQUS0/LK/K9sfgIiY2toXbJRfu0y2LmEYEM/mV/77R9DNG3+DbbuKPShrOFHb+hr1RJbxS3aeKWrIqC2VoZp5sMybbuzVNBT8btf3qJXQGF5M71GqeTCs1TyikAUeWHvEBX+YFdFT2zjPbJhNeXv1FSuSq2g4FjmecMODTATjs/oeR9YF2FNbp4gjK3uwTcFH/B8iZNvpW0TUsvD0JX4tv2oL7inHFX/mBTL9gg3lzVYLGvapk6FStuHYw/iLpfj6OOzZFjuMTa+m4bIYTKuYSRQrazjfUCOGMrwI+PBonkpm0dYNUkD178YQMpKRiB9p9v2a9shiU1leDXyFH9EEPm2ospIc9sY1TepsyDokkm0AiUcymt4h2Vf7oHrTEaY5lY7mbWXVYqlF+KXdBToLIVGsWv6G0cWlLueA95hB0JEdWvvl99GILfZqeAHORnogxO2/mb/yLEKKGm/1aDirQFwLXJe+B7HJcdHTTQ5afgvqQPkQtOFUeE/7ByDlIC6ki+ZjkFr6t7OD+0uCdHLPPAEtzA5HRKkxOKG1sOgVkeKIkJbsFwcpxsp/RlkapNYJT2uIxTqyIY2Kn9IhadCY/2E+FWsUgXejAP4I8QGY80a64hPqMKQur0Ct3Gi6YyNPauMXbEwN76uwb3feA78ZHn9DFfiFZR/73D7oGNPO4TPwIPQ0zeLGWV1f3GA6t9D1Y5Kl3jkABbcK+8BcO9DbxDr/Xkig7QNqaB4MtjECrfb/Jm3oH2fzZPp70hZX0VD01SXL7qiCpk8TOPYrZ6D6E8aC/5ryiopwHqFephTV0X6nly9xYBTUg1LJ51tKMBgLcT57BWt5/DX+0WJUNpcWWcD47whWTfxO8UY3Zsuu3zpKgW8wQ89wVs2tBeA97BiwaCZ9xnV6xdXY1Yzaesd4+3qYVZCVOcON9IBrB9JcROQul6A6gyOKJuvuXeTQZU17DBjvokk2TtSHojoejzsRlrVj8/unbWVlZWVlZWUFwh8O4UAQnNBllQAAAABJRU5ErkJggg=='; // Path to your dummy avatar image
 
@@ -49,13 +51,13 @@ const Navbar = () => {
     
     // Determine the API URL based on the user role
     if (role === 'organization') {
-      apiUrl = 'https://rough-1-gcic.onrender.com/api/organization/notifications';
+      apiUrl = `${BaseUrl}/api/organization/notifications`;
     } else if (role === 'manager') {
-      apiUrl = 'https://rough-1-gcic.onrender.com/api/manager/notifications';
+      apiUrl = `${BaseUrl}/api/manager/notifications`;
     } else if (role === 'Admin') {
-      apiUrl = 'https://rough-1-gcic.onrender.com/api/admin/notifications';
+      apiUrl = `${BaseUrl}/api/admin/notifications`;
     } else if (role === 'assistant') {
-      apiUrl = 'https://rough-1-gcic.onrender.com/api/admin/notifications-assistant';
+      apiUrl = `${BaseUrl}/api/admin/notifications-assistant`;
     }
 
     if (token) {
@@ -114,13 +116,13 @@ const Navbar = () => {
       try {
         let apiUrl = '';
         if (isAdminPortal && role === 'Admin') {
-          apiUrl = 'https://rough-1-gcic.onrender.com/api/admin/profile';
+          apiUrl = `${BaseUrl}/api/admin/profile`;
         } else if (isAdminPortal && role === 'assistant') {
-          apiUrl = 'https://rough-1-gcic.onrender.com/api/assistant/profile';
+          apiUrl = `${BaseUrl}/api/assistant/profile`;
         } else if (role === 'organization') {
-          apiUrl = 'https://rough-1-gcic.onrender.com/api/organization/me';
+          apiUrl = `${BaseUrl}/api/organization/me`;
         } else if (role === 'manager') {
-          apiUrl = 'https://rough-1-gcic.onrender.com/api/manager/info';
+          apiUrl = `${BaseUrl}/api/manager/info`;
         }
 
         const response = await fetch(apiUrl, {

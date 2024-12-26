@@ -14,6 +14,10 @@ import {
   Backdrop, Tooltip
 } from "@mui/material";
 import { styled } from '@mui/material/styles';
+import BaseUrl from '../../api';
+import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
+
 
 
 // Initialize Stripe with your publishable key
@@ -165,7 +169,7 @@ const PaymentView = ({ searchParams, loading, setLoading }) => {
     try {
       setLoading(true);
 
-      const response = await axios.post('https://rough-1-gcic.onrender.com/api/payment/create-payment-intent', {
+      const response = await axios.post(`${BaseUrl}/api/payment/create-payment-intent`, {
         amount: searchParams.get('amount'),
         email: searchParams.get('email'),
         orderId: searchParams.get('orderId'),
@@ -186,10 +190,23 @@ const PaymentView = ({ searchParams, loading, setLoading }) => {
         });
 
         if (result.error) {
+          toast.error(result.error.message, {
+            position: 'top-right',
+            autoClose: 4000,
+          });
           setPaymentError(result.error.message);
         } else if (result.paymentIntent.status === 'succeeded') {
           setPaymentSuccess(true);
-          // Navigate to T.jsx with all the payment details
+          
+          // Show success message with SweetAlert2
+          await Swal.fire({
+            icon: 'success',
+            title: 'Payment Successful!',
+            text: 'Your payment has been processed successfully.',
+            confirmButtonColor: '#3b82f6',
+          });
+
+          // Navigate to transaction details
           navigate('/transaction-details', {
             state: {
               paymentStatus: 'success',
@@ -206,6 +223,12 @@ const PaymentView = ({ searchParams, loading, setLoading }) => {
       }
     } catch (error) {
       console.error('Payment error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Payment Failed',
+        text: 'Payment processing failed. Please try again.',
+        confirmButtonColor: '#3b82f6',
+      });
       setPaymentError('Payment processing failed. Please try again.');
     } finally {
       setLoading(false);
@@ -486,6 +509,8 @@ const OrganizationPayment = () => {
   const [loading, setLoading] = useState(false);
   const [generatedPaymentLink, setGeneratedPaymentLink] = useState('');
   const location = useLocation();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   // Check if this is a payment link view
   const searchParams = new URLSearchParams(location.search);
@@ -518,7 +543,7 @@ const OrganizationPayment = () => {
       // console.log('Token:', token);
 
       if (adminPortal === 'true' && token) {
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/organizations', {
+        const response = await axios.get(`${BaseUrl}/api/admin/organizations`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -553,7 +578,11 @@ const OrganizationPayment = () => {
       // Validate required fields
       if (!paymentDetails.email || !paymentDetails.amount ||
         !paymentDetails.validity || !paymentDetails.clinicians) {
-        alert('Please fill in all fields');
+        toast.error('Please fill in all required fields', {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+        });
         return;
       }
 
@@ -563,9 +592,17 @@ const OrganizationPayment = () => {
       console.log('Generated Link:', paymentLink);
       setGeneratedPaymentLink(paymentLink);
       setGeneratedLink(true);
+      
+      toast.success('Payment link generated successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
     } catch (error) {
       console.error('Error generating payment link:', error);
-      alert('Failed to generate payment link. Please try again.');
+      toast.error('Failed to generate payment link. Please try again.', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
     }
   };
 
@@ -752,7 +789,7 @@ const OrganizationPayment = () => {
             </div>
 
             <div>
-              <Typography sx={{ mb: 1, fontWeight: 500 }}>Validity (in months)</Typography>
+              <Typography sx={{ mb: 1, fontWeight: 500 }}>Validity (in days)</Typography>
               <StyledInput
                 type="number"
                 name="validity"
@@ -804,7 +841,10 @@ const OrganizationPayment = () => {
               color="primary"
               onClick={() => {
                 navigator.clipboard.writeText(generatedPaymentLink);
-                alert('Link copied to clipboard!');
+                toast.success('Link copied to clipboard!', {
+                  position: 'top-right',
+                  autoClose: 2000,
+                });
               }}
             >
               Copy Link

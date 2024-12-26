@@ -8,9 +8,11 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import { styled, alpha } from '@mui/material/styles';
 // import './ClinicianSubscription.scss';
 import '../subscription-management/ClinicianSubscription.scss';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import { mdiDoctor, mdiAccountGroup, mdiAccountCheck, mdiRefresh, mdiAccountCancel, mdiAlertCircleOutline, mdiDownload } from '@mdi/js';
 import Icon from '@mdi/react';
+import BaseUrl from '../../api';
+
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   boxShadow: '0 10px 30px 0 rgba(0,0,0,0.1)',
@@ -138,8 +140,8 @@ export default function ClinicianSubscription() {
     try {
       // Fetch subscription counts
       const countsEndpoint = role === 'manager'
-        ? 'https://rough-1-gcic.onrender.com/api/manager/subscriptions-counts'
-        : 'https://rough-1-gcic.onrender.com/api/organization/subscription-counts';
+        ? `${BaseUrl}/api/manager/subscriptions-counts`
+        : `${BaseUrl}/api/organization/subscription-counts`;
 
       const countsResponse = await axios.get(countsEndpoint, {
         headers: {
@@ -158,8 +160,8 @@ export default function ClinicianSubscription() {
 
       // Fetch subscription details
       const subscriptionsEndpoint = role === 'manager'
-        ? 'https://rough-1-gcic.onrender.com/api/manager/subscriptions'
-        : 'https://rough-1-gcic.onrender.com/api/organization/subscriptions';
+        ? `${BaseUrl}/api/manager/subscriptions`
+        : `${BaseUrl}/api/organization/subscriptions`;
 
       const subscriptionsResponse = await axios.get(subscriptionsEndpoint, {
         headers: {

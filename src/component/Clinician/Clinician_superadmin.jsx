@@ -3,7 +3,7 @@ import { Dropdown } from "react-bootstrap";
 import Icon from '@mdi/react';
 import { mdiDoctor, mdiStethoscope, mdiChartLine, mdiPlus, mdiDownload } from '@mdi/js';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import './ClinicianPage.scss';
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
@@ -27,6 +27,8 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import Grid from '@mui/material/Grid';
+import BaseUrl from '../../api';
+
 
 // Define the theme
 const theme = createTheme({
@@ -938,7 +940,7 @@ const TableHeaderButton = styled(Button)(({ theme }) => ({
 
 //         try {
 //             const response = await axios.post(
-//                 'https://rough-1-gcic.onrender.com/api/auth/doctor-register',
+//                 `${BaseUrl}/api/auth/doctor-register`,
 //                 formData
 //             );
 
@@ -1075,8 +1077,8 @@ const EditClinicianDialog = ({ open, onClose, clinician, onSave }) => {
 
             if (adminPortal === 'true' && clinician?._id) {
                 const url = role === 'Admin'
-                    ? `https://rough-1-gcic.onrender.com/api/admin/doctors/${clinician._id}`
-                    : `https://rough-1-gcic.onrender.com/api/assistant/doctors/${clinician._id}`;
+                    ? `${BaseUrl}/api/admin/doctors/${clinician._id}`
+                    : `${BaseUrl}/api/assistant/doctors/${clinician._id}`;
 
                 const response = await axios.put(url, formData, {
                     headers: {
@@ -1299,7 +1301,7 @@ const ClinicianPage = () => {
 
             try {
                 const response = await axios.post(
-                    'https://rough-1-gcic.onrender.com/api/auth/doctor-register',
+                    `${BaseUrl}/api/auth/doctor-register`,
                     formData
                 );
 
@@ -1435,9 +1437,9 @@ const ClinicianPage = () => {
             if (adminPortal === 'true') {
                 let url;
                 if (role === 'Admin') {
-                    url = 'https://rough-1-gcic.onrender.com/api/admin/doctors';
+                    url = `${BaseUrl}/api/admin/doctors`;
                 } else if (role === 'assistant') {
-                    url = 'https://rough-1-gcic.onrender.com/api/assistant/doctors';
+                    url = `${BaseUrl}/api/assistant/doctors`;
                 }
 
                 const response = await axios.get(url, {
@@ -1465,13 +1467,13 @@ const ClinicianPage = () => {
             let url;
 
             if (role === 'manager') {
-                url = 'https://rough-1-gcic.onrender.com/api/manager/clinicians-counts';
+                url = `${BaseUrl}/api/manager/clinicians-counts`;
             } else if (role === 'Admin') {
-                url = 'https://rough-1-gcic.onrender.com/api/admin/doctors-counts';
+                url = `${BaseUrl}/api/admin/doctors-counts`;
             } else if (role === 'assistant') {
-                url = 'https://rough-1-gcic.onrender.com/api/assistant/doctors-counts';
+                url = `${BaseUrl}/api/assistant/doctors-counts`;
             } else {
-                url = 'https://rough-1-gcic.onrender.com/api/organization/doctors/count';
+                url = `${BaseUrl}/api/organization/doctors/count`;
             }
 
             const response = await axios.get(url, {
@@ -1501,7 +1503,7 @@ const ClinicianPage = () => {
     // const fetchMyClinicians = async () => {
     //     try {
     //         const token = sessionStorage.getItem('token');
-    //         const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/my-doctors', {
+    //         const response = await axios.get(`${BaseUrl}/api/organization/my-doctors`, {
     //             headers: {
     //                 'Authorization': `Bearer ${token}`
     //             }
@@ -1522,7 +1524,7 @@ const ClinicianPage = () => {
             const role = sessionStorage.getItem('role');
             let url;
             if (role === 'organization') {
-                url = 'https://rough-1-gcic.onrender.com/api/organization/my-doctors';
+                url = `${BaseUrl}/api/organization/my-doctors`;
             }
             // Clinicians added by Admin
             else if (role === 'Admin') {
@@ -1619,13 +1621,13 @@ const ClinicianPage = () => {
 
                 let url;
                 if (role === 'manager') {
-                    url = `https://rough-1-gcic.onrender.com/api/manager/delete-doctor/${id}`;
+                    url = `${BaseUrl}/api/manager/delete-doctor/${id}`;
                 } else if (role === 'Admin') {
-                    url = `https://rough-1-gcic.onrender.com/api/admin/doctors/${id}`;
+                    url = `${BaseUrl}/api/admin/doctors/${id}`;
                 } else if (role === 'assistant') {
-                    url = `https://rough-1-gcic.onrender.com/api/assistant/doctors/${id}`;
+                    url = `${BaseUrl}/api/assistant/doctors/${id}`;
                 } else {
-                    url = `https://rough-1-gcic.onrender.com/api/organization/delete-doctor/${id}`;
+                    url = `${BaseUrl}/api/organization/delete-doctor/${id}`;
                 }
 
                 const response = await axios.delete(url, {
@@ -1665,13 +1667,13 @@ const ClinicianPage = () => {
                 let url, data;
 
                 if (role === 'manager') {
-                    url = `https://rough-1-gcic.onrender.com/api/manager/update-doctor/${_id}`;
+                    url = `${BaseUrl}/api/manager/update-doctor/${_id}`;
                 } else if (role === 'Admin') {
-                    url = `https://rough-1-gcic.onrender.com/api/admin/doctors/${_id}`;
+                    url = `${BaseUrl}/api/admin/doctors/${_id}`;
                 } else if (role === 'assistant') {
-                    url = `https://rough-1-gcic.onrender.com/api/assistant/doctors/${_id}`;
+                    url = `${BaseUrl}/api/assistant/doctors/${_id}`;
                 } else {
-                    url = `https://rough-1-gcic.onrender.com/api/organization/update-doctor/${_id}`;
+                    url = `${BaseUrl}/api/organization/update-doctor/${_id}`;
                 }
                 data = { name, email };
 
@@ -1693,10 +1695,10 @@ const ClinicianPage = () => {
                 let url, data;
 
                 if (role === 'manager') {
-                    url = 'https://rough-1-gcic.onrender.com/api/manager/register-doctor';
+                    url = `${BaseUrl}/api/manager/register-doctor`;
                     data = { name, email, password };
                 } else {
-                    url = 'https://rough-1-gcic.onrender.com/api/organization/register-doctor';
+                    url = `${BaseUrl}/api/organization/register-doctor`;
                     data = { name, email, password };
                 }
 
@@ -1761,7 +1763,7 @@ const ClinicianPage = () => {
 
             if (adminPortal === 'true') {
                 const response = await axios.get(
-                    `https://rough-1-gcic.onrender.com/api/patients/get-doctor/${doctorId}`,
+                    `${BaseUrl}/api/patients/get-doctor/${doctorId}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${token}`

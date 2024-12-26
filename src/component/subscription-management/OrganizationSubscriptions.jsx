@@ -5,13 +5,15 @@ import OrganizationSubscriptionCharts from './OrganizationSubscriptionCharts';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Avatar, TablePagination, CircularProgress, Backdrop, Box, Typography, Chip, Tooltip, LinearProgress } from '@mui/material';
 import { styled, alpha, keyframes } from '@mui/material/styles';
 import './OrganizationSubscription.scss';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import { mdiOfficeBuilding, mdiAlertCircleOutline } from '@mdi/js';
 import { FaBuilding, FaCalendarAlt, FaDollarSign, FaUsers, FaStar, FaMapMarkerAlt, FaGlobe, FaChartLine, FaUserTie } from 'react-icons/fa';
 import Icon from '@mdi/react';
 import axios from 'axios';
 import { mdiMagnify } from '@mdi/js';
 import CloseIcon from '@mui/icons-material/Close';
+import BaseUrl from '../../api';
+
 
 // Keyframes for animations
 const pulse = keyframes`
@@ -311,11 +313,11 @@ export default function OrganizationSubscription() {
 
       if (adminPortal === 'true' && token) {
         try {
-          const subscriptionsResponse = await axios.get('https://rough-1-gcic.onrender.com/api/orgSubscription/getAll', {
+          const subscriptionsResponse = await axios.get(`${BaseUrl}/api/orgSubscription/getAll`, {
             headers: { Authorization: `Bearer ${token}` }
           });
 
-          const countsResponse = await axios.get('https://rough-1-gcic.onrender.com/api/orgSubscription/subscriptionCounts', {
+          const countsResponse = await axios.get(`${BaseUrl}/api/orgSubscription/subscriptionCounts`, {
             headers: { Authorization: `Bearer ${token}` }
           });
 

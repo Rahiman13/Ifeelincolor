@@ -6,13 +6,15 @@ import ClinicianSubscriptionCharts from './ClinicianSubscriptionCharts';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, CircularProgress, Backdrop, Box, Typography, Chip, Avatar, Tooltip, LinearProgress } from '@mui/material';
 import { styled, alpha, createTheme } from '@mui/material/styles';
 import './ClinicianSubscription.scss';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import { mdiDoctor } from '@mdi/js';
 import { FaUserMd, FaCalendarAlt, FaDollarSign, FaClock, FaUsers, FaStar, FaChartLine, FaMapMarkerAlt, FaGraduationCap } from 'react-icons/fa';
 import Icon from '@mdi/react';
 import { ThemeProvider } from '@mui/material/styles';
 import { mdiAlertCircleOutline, mdiMagnify } from '@mdi/js';
 import CloseIcon from '@mui/icons-material/Close';
+import BaseUrl from '../../api';
+
 
 const theme = createTheme({
   palette: {
@@ -352,7 +354,7 @@ export default function ClinicianSubscription() {
 
     try {
       // Fetch subscription counts
-      const countsResponse = await axios.get('https://rough-1-gcic.onrender.com/api/doctorSub/counts', {
+      const countsResponse = await axios.get(`${BaseUrl}/api/doctorSub/counts`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -363,7 +365,7 @@ export default function ClinicianSubscription() {
       }
 
       // Fetch subscription details (if needed)
-      const response = await axios.get('https://rough-1-gcic.onrender.com/api/doctorSub/getAll', {
+      const response = await axios.get(`${BaseUrl}/api/doctorSub/getAll`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

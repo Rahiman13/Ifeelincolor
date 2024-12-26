@@ -41,6 +41,8 @@ import { mdiClipboardListOutline, mdiDoctor, mdiPencil, mdiDelete, mdiAlertCircl
 import { motion } from 'framer-motion';
 import Card_circle from '../../assets/circle.svg';
 import { mdiChartLine } from '@mdi/js';
+import BaseUrl from '../../api';
+
 
 const StyledDashboard = styled('div')(({ theme }) => ({
   background: 'linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%)',
@@ -473,12 +475,12 @@ const PlansManagement = () => {
         if (!token || !organizationId) {
           throw new Error('No authorization token or organization ID found');
         } else {
-          url = 'https://rough-1-gcic.onrender.com/api/organization/plans'
+          url = `${BaseUrl}/api/organization/plans`
         }
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans`;
       }
 
       const response = await axios.get(
@@ -524,7 +526,7 @@ const PlansManagement = () => {
 
       if (adminPortal === 'true' && token) {
         const response = await axios.get(
-          'https://rough-1-gcic.onrender.com/api/clinicistPlan',
+          `${BaseUrl}/api/clinicistPlan`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -557,11 +559,11 @@ const PlansManagement = () => {
 
       let url;
       if (role === 'organization') {
-        url = `https://rough-1-gcic.onrender.com/api/organization/plan/${planId}`;
+        url = `${BaseUrl}/api/organization/plan/${planId}`;
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans/${planId}`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans/${planId}`;
       }
 
       const response = await axios.get(
@@ -628,11 +630,11 @@ const PlansManagement = () => {
 
       let url;
       if (role === 'organization') {
-        url = `https://rough-1-gcic.onrender.com/api/organization/plan/${planId}`
+        url = `${BaseUrl}/api/organization/plan/${planId}`
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/portal-plans/${planId}`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans/${planId}`;
       }
 
       const response = await axios.put(
@@ -682,7 +684,7 @@ const PlansManagement = () => {
       if (adminPortal === 'true') {
         const response = await axios({
           method: 'post',
-          url: 'https://rough-1-gcic.onrender.com/api/admin/create-plan',
+          url: `${BaseUrl}/api/admin/create-plan`,
           data: formattedData,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -747,7 +749,7 @@ const PlansManagement = () => {
 
         const response = await axios({
           method: 'delete',
-          url: `https://rough-1-gcic.onrender.com/api/admin/portal-plans/${planId}`,
+          url: `${BaseUrl}/api/admin/portal-plans/${planId}`,
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -805,7 +807,7 @@ const PlansManagement = () => {
       console.log('Formatted data being sent:', formattedData);
 
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/clinicistPlan',
+        `${BaseUrl}/api/clinicistPlan`,
         formattedData,
         {
           headers: {
@@ -883,7 +885,7 @@ const PlansManagement = () => {
 
       const response = await axios({
         method: 'post',
-        url: 'https://rough-1-gcic.onrender.com/api/admin/create-plan',
+        url: `${BaseUrl}/api/admin/create-plan`,
         data: formattedData,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -935,7 +937,7 @@ const PlansManagement = () => {
 
       const response = await axios({
         method: 'put',
-        url: `https://rough-1-gcic.onrender.com/api/admin/portal-plans/${planData.id}`,
+        url: `${BaseUrl}/api/admin/portal-plans/${planData.id}`,
         data: formattedData,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -978,7 +980,7 @@ const PlansManagement = () => {
       }
 
       const response = await axios.get(
-        `https://rough-1-gcic.onrender.com/api/clinicistPlan/${planId}`,
+        `${BaseUrl}/api/clinicistPlan/${planId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1030,7 +1032,7 @@ const PlansManagement = () => {
       };
 
       const response = await axios.put(
-        `https://rough-1-gcic.onrender.com/api/clinicistPlan/${planData._id}`,
+        `${BaseUrl}/api/clinicistPlan/${planData._id}`,
         formattedData,
         {
           headers: {
@@ -1081,7 +1083,7 @@ const PlansManagement = () => {
         }
 
         const response = await axios.delete(
-          `https://rough-1-gcic.onrender.com/api/clinicistPlan/${planId}`,
+          `${BaseUrl}/api/clinicistPlan/${planId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

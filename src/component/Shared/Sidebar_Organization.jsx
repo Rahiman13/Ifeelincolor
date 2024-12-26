@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Collapse } from 'react-bootstrap';
 import '@mdi/font/css/materialdesignicons.min.css';
 import axios from 'axios';
+import BaseUrl from '../../api';
+
 
 const Sidebar = () => {
   const [menuState, setMenuState] = useState({});
@@ -19,11 +21,11 @@ const Sidebar = () => {
         try {
           let response;
           if (role === 'organization') {
-            response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/me', {
+            response = await axios.get(`${BaseUrl}/api/organization/me`, {
               headers: { Authorization: `Bearer ${token}` }
             });
           } else if (role === 'manager') {
-            response = await axios.get('https://rough-1-gcic.onrender.com/api/manager/info', {
+            response = await axios.get(`${BaseUrl}/api/manager/info`, {
               headers: { Authorization: `Bearer ${token}` }
             });
           }

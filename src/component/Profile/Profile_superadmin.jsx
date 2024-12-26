@@ -64,6 +64,8 @@ import { TreeView, TreeItem } from '@material-ui/lab';
 import ProfileFlowchartSuperadmin from './Profile_flowchart_superadmin';
 import OrgChart from "@dabeng/react-orgchart";
 // import "@dabeng/react-orgchart/dist/ReactOrgChart.css";
+import BaseUrl from '../../api';
+
 
 
 const formatDate = (dateString) => {
@@ -1062,7 +1064,7 @@ const ProfileHeader = ({ adminData, classes, setEditModalOpen, setPrivacyPolicyO
       // Make the API call
       const response = await axios({
         method: 'PATCH',
-        url: 'https://rough-1-gcic.onrender.com/api/admin/update-media',
+        url: `${BaseUrl}/api/admin/update-media`,
         data: formData,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1510,9 +1512,9 @@ const OrganizationHierarchy = ({ classes }) => {
         };
 
         const [adminRes, assistantsRes, cliniciansRes] = await Promise.all([
-          axios.get('https://rough-1-gcic.onrender.com/api/admin/profile', config),
-          axios.get('https://rough-1-gcic.onrender.com/api/admin/assistants', config),
-          axios.get('https://rough-1-gcic.onrender.com/api/admin/doctors', config)
+          axios.get(`${BaseUrl}/api/admin/profile`, config),
+          axios.get(`${BaseUrl}/api/admin/assistants`, config),
+          axios.get(`${BaseUrl}/api/admin/doctors`, config)
         ]);
 
         // Create hierarchy data structure
@@ -1561,7 +1563,7 @@ const OrganizationHierarchy = ({ classes }) => {
     try {
       const token = sessionStorage.getItem('token');
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/admin/create-assistant',
+        `${BaseUrl}/api/admin/create-assistant`,
         formData,
         {
           headers: {
@@ -1586,7 +1588,7 @@ const OrganizationHierarchy = ({ classes }) => {
     try {
       const token = sessionStorage.getItem('token');
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/assistant/create-doctor',
+        `${BaseUrl}/api/assistant/create-doctor`,
         { ...formData, assistantId: selectedAssistantId },
         {
           headers: {
@@ -2108,12 +2110,12 @@ export default function ProfilePage() {
         let response;
         if (role.toLowerCase() === 'assistant') {
           response = await axios.get(
-            'https://rough-1-gcic.onrender.com/api/assistant/profile',
+            `${BaseUrl}/api/assistant/profile`,
             config
           );
         } else {
           response = await axios.get(
-            'https://rough-1-gcic.onrender.com/api/admin/profile',
+            `${BaseUrl}/api/admin/profile`,
             config
           );
         }
@@ -2195,7 +2197,7 @@ export default function ProfilePage() {
       };
 
       const response = await axios.put(
-        'https://rough-1-gcic.onrender.com/api/admin/update-info',
+        `${BaseUrl}/api/admin/update-info`,
         updateData,
         {
           headers: {

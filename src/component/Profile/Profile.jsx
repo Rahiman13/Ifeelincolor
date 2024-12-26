@@ -64,6 +64,7 @@ import { Edit as EditIcon } from '@material-ui/icons';
 import Swal from 'sweetalert2';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BaseUrl from '../../api';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -451,13 +452,13 @@ export default function ProfilePage() {
     try {
       if (role === 'organization') {
         const [profileResponse, managersResponse, doctorsResponse] = await Promise.all([
-          axios.get('https://rough-1-gcic.onrender.com/api/organization/me', {
+          axios.get(`${BaseUrl}/api/organization/me`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get('https://rough-1-gcic.onrender.com/api/organization/managers', {
+          axios.get(`${BaseUrl}/api/organization/managers`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get('https://rough-1-gcic.onrender.com/api/organization/doctors', {
+          axios.get(`${BaseUrl}/api/organization/doctors`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -510,7 +511,7 @@ export default function ProfilePage() {
           setHierarchyData(hierarchyStructure);
         }
       } else if (role === 'manager') {
-        const profileResponse = await axios.get('https://rough-1-gcic.onrender.com/api/manager/info', {
+        const profileResponse = await axios.get(`${BaseUrl}/api/manager/info`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (profileResponse.data.status === 'success') {
@@ -546,7 +547,7 @@ export default function ProfilePage() {
         setLoadingTeamMembers(true);
         try {
           const response = await axios.get(
-            'https://rough-1-gcic.onrender.com/api/manager/clinicians-created',
+            `${BaseUrl}/api/manager/clinicians-created`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -1066,7 +1067,7 @@ export default function ProfilePage() {
 
     try {
       const response = await axios.put(
-        'https://rough-1-gcic.onrender.com/api/organization/update-data',
+        `${BaseUrl}/api/organization/update-data`,
         formData,
         {
           headers: {
@@ -1163,7 +1164,7 @@ export default function ProfilePage() {
       formData.append('certificate', file);
 
       const response = await axios.put(
-        'https://rough-1-gcic.onrender.com/api/organization/update-certificate',
+        `${BaseUrl}/api/organization/update-certificate`,
         formData,
         {
           headers: {

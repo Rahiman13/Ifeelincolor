@@ -5,7 +5,7 @@ import { Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRo
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import Icon from '@mdi/react';
 import { mdiCurrencyUsd, mdiChartLine, mdiCashMultiple, mdiEye, mdiMonitor, mdiDoctor, mdiOfficeBuilding, mdiAlertCircleOutline, mdiMagnify, mdiDownload } from '@mdi/js';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -17,6 +17,8 @@ import { styled, alpha, keyframes, ThemeProvider, useTheme, createTheme } from '
 import { FaCalendarPlus, FaCalendarMinus, FaMapMarkerAlt, FaUserMd, FaBuilding } from 'react-icons/fa';
 import { TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import BaseUrl from '../../api';
+
 
 // Create a theme instance
 const theme = createTheme({
@@ -546,7 +548,7 @@ const BudgetAnalysis = () => {
     try {
       const token = sessionStorage.getItem('token');
       const baseUrl = getApiBaseUrl();
-      const response = await axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/detailed-earnings-month-wise`, {
+      const response = await axios.get(`${BaseUrl}/api/${baseUrl}/detailed-earnings-month-wise`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -566,7 +568,7 @@ const BudgetAnalysis = () => {
     try {
       const token = sessionStorage.getItem('token');
       const baseUrl = getApiBaseUrl();
-      const response = await axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/total-earnings`, {
+      const response = await axios.get(`${BaseUrl}/api/${baseUrl}/total-earnings`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -585,7 +587,7 @@ const BudgetAnalysis = () => {
 
     if (adminPortal) {
       try {
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/admin/total-earnings', {
+        const response = await axios.get(`${BaseUrl}/api/admin/total-earnings`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -608,9 +610,9 @@ const BudgetAnalysis = () => {
       let url;
 
       if (role === 'manager') {
-        url = `https://rough-1-gcic.onrender.com/api/manager/earnings?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`;
+        url = `${BaseUrl}/api/manager/earnings?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`;
       } else {
-        url = `https://rough-1-gcic.onrender.com/api/organization/earnings?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`;
+        url = `${BaseUrl}/api/organization/earnings?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`;
       }
 
       const response = await axios.get(url, {
@@ -654,19 +656,19 @@ const BudgetAnalysis = () => {
 
       if (isAdminPortal) {
         if (filter === 'clinician') {
-          url = 'https://rough-1-gcic.onrender.com/api/doctorSub/getAll';
+          url = `${BaseUrl}/api/doctorSub/getAll`;
         } else if (filter === 'organization') {
-          url = 'https://rough-1-gcic.onrender.com/api/orgSubscription/getAll';
+          url = `${BaseUrl}/api/orgSubscription/getAll`;
         } else {
-          url = `https://rough-1-gcic.onrender.com/api/${baseUrl}/subscriptions`;
+          url = `${BaseUrl}/api/${baseUrl}/subscriptions`;
         }
       } else {
         // Use existing URLs for non-admin users
         const role = sessionStorage.getItem('role');
         if (role === 'manager') {
-          url = 'https://rough-1-gcic.onrender.com/api/manager/subscriptions';
+          url = `${BaseUrl}/api/manager/subscriptions`;
         } else {
-          url = 'https://rough-1-gcic.onrender.com/api/organization/subscriptions';
+          url = `${BaseUrl}/api/organization/subscriptions`;
         }
       }
 

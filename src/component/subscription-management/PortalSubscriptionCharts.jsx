@@ -8,6 +8,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { styled } from '@mui/material/styles';
 import { format, startOfYear, endOfYear } from 'date-fns';
+import BaseUrl from '../../api';
+
 
 const StyledDatePicker = styled(DatePicker)(({ theme }) => ({
   '& .MuiInputBase-root': {
@@ -58,7 +60,7 @@ const PortalSubscriptionCharts = () => {
   const fetchSubscriptionData = async () => {
     const token = sessionStorage.getItem('token');
     const userRole = sessionStorage.getItem('role');
-    const baseUrl = 'https://rough-1-gcic.onrender.com/api';
+    const baseUrl = `${BaseUrl}/api`;
 
     try {
       const endpoint = userRole === 'assistant'

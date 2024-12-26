@@ -5,7 +5,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import Icon from '@mdi/react';
 import { mdiHome, mdiDoctor, mdiAlertCircleOutline, mdiAccount, mdiDiamond, mdiCashMultiple, mdiDownload, mdiEye } from '@mdi/js';
-import Card_circle from '../../assets/circle.svg'
+import Card_circle from '../../assets/circle.png'
 import {
     Table,
     TableBody,
@@ -27,6 +27,8 @@ import './Dashboard_organization.css';
 import { Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import BaseUrl from '../../api';
+
 
 // Add these styled components at the top of your file, after the imports
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
@@ -563,7 +565,7 @@ class Dashboard extends Component {
                 throw new Error("No authorization token found");
             }
 
-            const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/managers', {
+            const response = await axios.get(`${BaseUrl}/api/organization/managers`, {
                 headers: {
                     'Authorization': `Bearer ${token}` // Include the token in the request headers
                 }
@@ -586,7 +588,7 @@ class Dashboard extends Component {
                 throw new Error("No authorization token found");
             }
 
-            const url = 'https://rough-1-gcic.onrender.com/api/organization/subscriptions';
+            const url = `${BaseUrl}/api/organization/subscriptions`;
 
             const response = await axios.get(url, {
                 headers: {
@@ -640,7 +642,7 @@ class Dashboard extends Component {
                 throw new Error("No authorization token found");
             }
 
-            const url = 'https://rough-1-gcic.onrender.com/api/organization/doctors';
+            const url = `${BaseUrl}/api/organization/doctors`;
 
             const response = await axios.get(url, {
                 headers: {
@@ -695,7 +697,7 @@ class Dashboard extends Component {
                 throw new Error("No authorization token found");
             }
 
-            const response = await axios.get('https://rough-1-gcic.onrender.com/api/organization/earnings', {
+            const response = await axios.get(`${BaseUrl}/api/organization/earnings`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -752,16 +754,16 @@ class Dashboard extends Component {
             }
 
             const [doctorsResponse, subscriptionsResponse, earningsResponse, patientsResponse] = await Promise.all([
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/doctors/count', {
+                axios.get(`${BaseUrl}/api/organization/doctors/count`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/subscriptions', {
+                axios.get(`${BaseUrl}/api/organization/subscriptions`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/earnings', {
+                axios.get(`${BaseUrl}/api/organization/earnings`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/patients', {
+                axios.get(`${BaseUrl}/api/organization/patients`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);
@@ -851,16 +853,16 @@ class Dashboard extends Component {
 
             // Fetch previous period data
             const [patientsResponse, cliniciansResponse, subscriptionsResponse, earningsResponse] = await Promise.all([
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/patients', {
+                axios.get(`${BaseUrl}/api/organization/patients`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/doctors/count', {
+                axios.get(`${BaseUrl}/api/organization/doctors/count`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/subscriptions', {
+                axios.get(`${BaseUrl}/api/organization/subscriptions`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                axios.get('https://rough-1-gcic.onrender.com/api/organization/earnings', {
+                axios.get(`${BaseUrl}/api/organization/earnings`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);

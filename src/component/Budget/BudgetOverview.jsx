@@ -5,7 +5,7 @@ import { Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRo
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Card_circle from '../../assets/circle.svg';
+import Card_circle from '../../assets/circle.png';
 import Icon from '@mdi/react';
 import { mdiCurrencyUsd, mdiChartLine, mdiCashMultiple, mdiEye, mdiMonitor, mdiDoctor, mdiOfficeBuilding, mdiAlertCircleOutline, mdiDownload } from '@mdi/js';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -14,6 +14,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format } from 'date-fns'; // Add this import at the top of your file
 import { styled, alpha, keyframes } from '@mui/material/styles';
 // import { fontWeight } from 'html2canvas/dist/types/css/property-descriptors/font-weight';
+import BaseUrl from '../../api';
+
 
 // Add these styled components at the top of your file, after the imports
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
@@ -314,9 +316,9 @@ const BudgetAnalysis = () => {
       let url;
 
       if (role === 'organization') {
-        url = 'https://rough-1-gcic.onrender.com/api/organization/earnings';
+        url = `${BaseUrl}/api/organization/earnings`;
       } else if (role === 'manager') {
-        url = 'https://rough-1-gcic.onrender.com/api/manager/earnings';
+        url = `${BaseUrl}/api/manager/earnings`;
       }
 
       if (url) {
@@ -365,9 +367,9 @@ const BudgetAnalysis = () => {
       const end = endDate ? endDate.toISOString().split('T')[0] : `${currentYear}-12-31`;
 
       if (role === 'manager') {
-        url = `https://rough-1-gcic.onrender.com/api/manager/earnings?startDate=${start}&endDate=${end}`;
+        url = `${BaseUrl}/api/manager/earnings?startDate=${start}&endDate=${end}`;
       } else {
-        url = `https://rough-1-gcic.onrender.com/api/organization/earnings?startDate=${start}&endDate=${end}`;
+        url = `${BaseUrl}/api/organization/earnings?startDate=${start}&endDate=${end}`;
       }
 
       const response = await axios.get(url, {
@@ -408,13 +410,13 @@ const BudgetAnalysis = () => {
       let url;
 
       if (role === 'manager') {
-        url = 'https://rough-1-gcic.onrender.com/api/manager/subscriptions';
+        url = `${BaseUrl}/api/manager/subscriptions`;
       }
       else if (role === 'Admin') {
-        url = 'https://rough-1-gcic.onrender.com/api/admin/subscriptions';
+        url = `${BaseUrl}/api/admin/subscriptions`;
 
       } else {
-        url = 'https://rough-1-gcic.onrender.com/api/organization/subscriptions';
+        url = `${BaseUrl}/api/organization/subscriptions`;
       }
 
       const response = await axios.get(url, {

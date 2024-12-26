@@ -8,6 +8,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import CircularProgress from '@mui/material/CircularProgress';
+import BaseUrl from '../../api';
+
 
 const StyledDashboard = styled('div')(({ theme }) => ({
   background: 'linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%)',
@@ -682,7 +684,7 @@ const Recommendations = () => {
 
     if (token) {
       try {
-        const response = await axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/subscriptions`, {
+        const response = await axios.get(`${BaseUrl}/api/${baseUrl}/subscriptions`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -702,7 +704,7 @@ const Recommendations = () => {
 
     if (token) {
       try {
-        const response = await axios.get(`https://rough-1-gcic.onrender.com/api/${baseUrl}/doctor-plan-subscriptions-with-details`, {
+        const response = await axios.get(`${BaseUrl}/api/${baseUrl}/doctor-plan-subscriptions-with-details`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -719,7 +721,7 @@ const Recommendations = () => {
     const token = sessionStorage.getItem('token');
     if (token) {
       try {
-        const response = await axios.get('https://rough-1-gcic.onrender.com/api/rec/recommendations', {
+        const response = await axios.get(`${BaseUrl}/api/rec/recommendations`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -747,8 +749,8 @@ const Recommendations = () => {
     if (token && adminPortal === 'true') {
       try {
         const baseUrl = role === 'assistant' ?
-          'https://rough-1-gcic.onrender.com/api/assistant/patient-assessments' :
-          'https://rough-1-gcic.onrender.com/api/admin/patient-assessments';
+          `${BaseUrl}/api/assistant/patient-assessments` :
+          `${BaseUrl}/api/admin/patient-assessments`;
 
         const response = await axios.get(baseUrl, {
           headers: { Authorization: `Bearer ${token}` }
@@ -817,7 +819,7 @@ const Recommendations = () => {
           formData.append(`videos`, file);
         });
 
-        const response = await axios.post('https://rough-1-gcic.onrender.com/api/rec/create-rec', formData, {
+        const response = await axios.post(`${BaseUrl}/api/rec/create-rec`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -889,7 +891,7 @@ const Recommendations = () => {
         });
 
         if (result.isConfirmed) {
-          await axios.delete(`https://rough-1-gcic.onrender.com/api/rec/recommendations/${recommendationId}`, {
+          await axios.delete(`${BaseUrl}/api/rec/recommendations/${recommendationId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
 
@@ -955,7 +957,7 @@ const Recommendations = () => {
           formData.append(`videos`, file);
         });
 
-        const response = await axios.put(`https://rough-1-gcic.onrender.com/api/rec/recommendations/${newRecommendation._id}`, formData, {
+        const response = await axios.put(`${BaseUrl}/api/rec/recommendations/${newRecommendation._id}`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'

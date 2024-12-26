@@ -22,6 +22,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Snackbar from '@mui/material/Snackbar';
+import { useLocation } from 'react-router-dom';
 
 // Load Stripe with your publishable key
 const stripePromise = loadStripe("pk_test_51QQ5mPEO0XTlFhbUdSBmDZ0dfl2fiMQVnCbB8mHQE8TTKxakT4ejqO2UDUGEbZe5zr6JSl9irEmIYpmYhc0vD3SV00dQ2x41fY");
@@ -168,19 +169,53 @@ const PaymentIdContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
+const FinalStatusContainer = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: 'linear-gradient(135deg, #f6f9fc 0%, #eef2f7 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 9999,
+  padding: theme.spacing(3)
+}));
+
+const StatusCard = styled(Paper)(({ theme, success }) => ({
+  padding: theme.spacing(4),
+  maxWidth: '500px',
+  width: '100%',
+  textAlign: 'center',
+  borderRadius: '16px',
+  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)',
+  background: '#ffffff',
+  border: `2px solid ${success ? '#15803d' : '#dc2626'}`,
+}));
+
 const PaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
-  const [amount, setAmount] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [orderId, setOrderId] = useState("");
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  
+  const [paymentDetails] = useState({
+    amount: searchParams.get('amount') || "",
+    customerName: searchParams.get('orgName') || "",
+    orderId: searchParams.get('orderId') || "",
+    email: searchParams.get('email') || "",
+    validity: searchParams.get('validity') || "",
+    clinicians: searchParams.get('clinicians') || ""
+  });
+  
   const [paymentStatus, setPaymentStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [paymentId, setPaymentId] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showFinalStatus, setShowFinalStatus] = useState(false);
 
   const handleCopyPaymentId = () => {
     navigator.clipboard.writeText(paymentId);
@@ -189,22 +224,20 @@ const PaymentForm = () => {
 
   const handlePayment = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements || !amount || !customerName || !orderId) {
-      alert("Please fill out all fields!");
+    if (!stripe || !elements) {
+      alert("Please wait for Stripe to initialize!");
       return;
     }
 
     setLoading(true);
     try {
       const response = await axios.post("https://rough-1-gcic.onrender.com/api/payment/create-payment-intent", {
-        amount: parseFloat(amount),
-        currency: "usd",
-        payment_method_types: ["card"],
-        email: email,
-        metadata: {
-          order_id: orderId,
-          customer_name: customerName,
-        },
+        amount: parseFloat(paymentDetails.amount),
+        email: paymentDetails.email,
+        orderId: paymentDetails.orderId,
+        orgName: paymentDetails.customerName,
+        validity: paymentDetails.validity,
+        clinicians: paymentDetails.clinicians
       });
 
       const { clientSecret } = response.data;
@@ -212,7 +245,7 @@ const PaymentForm = () => {
       const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
-          billing_details: { name: customerName },
+          billing_details: { name: paymentDetails.customerName },
         },
       });
 
@@ -220,164 +253,67 @@ const PaymentForm = () => {
         setPaymentStatus("Payment failed! " + error.message);
         setIsSuccess(false);
       } else {
-        setPaymentStatus("Payment successful!");
+        try {
+          const subscriptionResponse = await axios.post(
+            "https://rough-1-gcic.onrender.com/api/orgSubscription/create",
+            {
+              organizationId: paymentDetails.orderId,
+              clinicians: paymentDetails.clinicians,
+              price: paymentDetails.amount,
+              validity: paymentDetails.validity
+            }
+          );
+
+          if (subscriptionResponse.data.status === "success") {
+            setPaymentStatus("Payment and subscription setup successful!");
+          } else {
+            setPaymentStatus("Payment successful but subscription setup failed. Please contact support.");
+          }
+        } catch (subscriptionError) {
+          console.error("Subscription setup error:", subscriptionError);
+          setPaymentStatus("Payment successful but subscription setup failed. Please contact support.");
+        }
+
         setPaymentId(paymentIntent.id);
         setIsSuccess(true);
       }
-      setOpenDialog(true);
+      setShowFinalStatus(true);
     } catch (err) {
       setPaymentStatus("Error occurred: " + err.message);
       setIsSuccess(false);
-      setOpenDialog(true);
+      setShowFinalStatus(true);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <PageWrapper>
-      <Container maxWidth="sm">
-        <FormContainer elevation={3}>
-          <FormHeader>
-            <Typography variant="h4" component="h2" fontWeight="bold" 
-              sx={{ 
-                textAlign: 'center',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
-                position: 'relative',
-                zIndex: 1
-              }}>
-              Secure Payment
-            </Typography>
-            <Typography variant="subtitle1" 
-              sx={{ 
-                textAlign: 'center', 
-                mt: 1,
-                opacity: 0.9,
-                position: 'relative',
-                zIndex: 1
-              }}>
-              Complete your transaction securely with Stripe
-            </Typography>
-          </FormHeader>
-          
-          <FormContent>
-            <form onSubmit={handlePayment}>
-              <StyledInput
-                fullWidth
-                label="Customer Name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                variant="outlined"
-                InputProps={{
-                  sx: { fontSize: '1.1rem' }
-                }}
-              />
-              <StyledInput
-                fullWidth
-                label="Order ID"
-                value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
-                variant="outlined"
-                InputProps={{
-                  sx: { fontSize: '1.1rem' }
-                }}
-              />
-              <StyledInput
-                fullWidth
-                label="Amount (USD)"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                variant="outlined"
-                InputProps={{
-                  startAdornment: <Typography sx={{ mr: 1, color: '#666' }}>$</Typography>,
-                  sx: { fontSize: '1.1rem' }
-                }}
-              />
-              <StyledInput
-                fullWidth
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                variant="outlined"
-                InputProps={{
-                  sx: { fontSize: '1.1rem' }
-                }}
-              />
-              <CardContainer>
-                <Typography variant="subtitle1" sx={{ mb: 2, color: '#666' }}>
-                  Card Details
-                </Typography>
-                <CardElement options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#424770',
-                      '::placeholder': {
-                        color: '#aab7c4',
-                      },
-                      padding: '10px 0',
-                    },
-                  },
-                }} />
-              </CardContainer>
-              <PaymentButton
-                fullWidth
-                type="submit"
-                disabled={!stripe || !elements || loading}
-                startIcon={loading && <CircularProgress size={20} color="inherit" />}
-              >
-                {loading ? 'Processing...' : `Pay $${amount || '0'}`}
-              </PaymentButton>
-            </form>
-            
-            {paymentStatus && (
-              <Typography
-                sx={{
-                  mt: 3,
-                  p: 2,
-                  borderRadius: '12px',
-                  bgcolor: paymentStatus.includes('successful') ? 'rgba(72, 187, 120, 0.1)' : 'rgba(245, 101, 101, 0.1)',
-                  color: paymentStatus.includes('successful') ? '#2f855a' : '#c53030',
-                  border: `1px solid ${paymentStatus.includes('successful') ? '#48bb78' : '#f56565'}`,
-                  textAlign: 'center',
-                  fontSize: '1.1rem',
-                  fontWeight: 500,
-                }}
-              >
-                {paymentStatus}
-              </Typography>
-            )}
-          </FormContent>
-        </FormContainer>
-      </Container>
-      
-      <StatusDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        aria-labelledby="payment-status-dialog"
-      >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 1,
-          color: isSuccess ? '#15803d' : '#b91c1c'
-        }}>
+  if (showFinalStatus) {
+    return (
+      <FinalStatusContainer>
+        <StatusCard success={isSuccess}>
           {isSuccess ? (
-            <>
-              <CheckCircleIcon color="success" />
-              Payment Successful
-            </>
+            <CheckCircleIcon 
+              sx={{ 
+                fontSize: 64, 
+                color: '#15803d', 
+                mb: 2 
+              }} 
+            />
           ) : (
-            <>
-              <ErrorIcon color="error" />
-              Payment Failed
-            </>
+            <ErrorIcon 
+              sx={{ 
+                fontSize: 64, 
+                color: '#dc2626', 
+                mb: 2 
+              }} 
+            />
           )}
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" sx={{ color: '#1e293b' }}>
+          
+          <Typography variant="h4" sx={{ mb: 3, color: isSuccess ? '#15803d' : '#dc2626' }}>
+            {isSuccess ? 'Payment Successful!' : 'Payment Failed'}
+          </Typography>
+          
+          <Typography variant="body1" sx={{ mb: 3, color: '#1e293b' }}>
             {paymentStatus}
           </Typography>
           
@@ -404,35 +340,159 @@ const PaymentForm = () => {
               </Tooltip>
             </PaymentIdContainer>
           )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setOpenDialog(false)}
-            sx={{
-              color: '#1a237e',
-              '&:hover': {
-                backgroundColor: 'rgba(26, 35, 126, 0.04)'
-              }
-            }}
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </StatusDialog>
+          
+          <Typography variant="body2" sx={{ mt: 4, color: '#64748b' }}>
+            {isSuccess 
+              ? 'You can close this window now. A confirmation email has been sent to your registered email address.'
+              : 'Please contact support if you believe this is an error. You can try the payment again by refreshing the page.'}
+          </Typography>
+        </StatusCard>
+        
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={3000}
+          onClose={() => setOpenSnackbar(false)}
+          message="Payment ID copied to clipboard"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          sx={{
+            '& .MuiSnackbarContent-root': {
+              bgcolor: '#1a237e',
+              borderRadius: '8px'
+            }
+          }}
+        />
+      </FinalStatusContainer>
+    );
+  }
 
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setOpenSnackbar(false)}
-        message="Payment ID copied to clipboard"
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        sx={{
-          '& .MuiSnackbarContent-root': {
-            bgcolor: '#1a237e',
-            borderRadius: '8px'
-          }
-        }}
-      />
+  return (
+    <PageWrapper>
+      <Container maxWidth="sm">
+        <FormContainer elevation={3}>
+          <FormHeader>
+            <Typography variant="h4" component="h2" fontWeight="bold" 
+              sx={{ textAlign: 'center' }}>
+              Organization Payment Details
+            </Typography>
+          </FormHeader>
+          
+          <FormContent>
+            <form onSubmit={handlePayment}>
+              <StyledInput
+                fullWidth
+                label="Organization Name"
+                value={paymentDetails.customerName}
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                  sx: { fontSize: '1.1rem', backgroundColor: '#f5f5f5' }
+                }}
+              />
+
+              <StyledInput
+                fullWidth
+                label="Order ID"
+                value={paymentDetails.orderId}
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                  sx: { fontSize: '1.1rem', backgroundColor: '#f5f5f5' }
+                }}
+              />
+
+              <StyledInput
+                fullWidth
+                label="Amount (USD)"
+                value={paymentDetails.amount}
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                  startAdornment: <Typography sx={{ mr: 1, color: '#666' }}>$</Typography>,
+                  sx: { fontSize: '1.1rem', backgroundColor: '#f5f5f5' }
+                }}
+              />
+
+              <StyledInput
+                fullWidth
+                label="Email"
+                value={paymentDetails.email}
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                  sx: { fontSize: '1.1rem', backgroundColor: '#f5f5f5' }
+                }}
+              />
+
+              <StyledInput
+                fullWidth
+                label="Validity (days)"
+                value={paymentDetails.validity}
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                  sx: { fontSize: '1.1rem', backgroundColor: '#f5f5f5' }
+                }}
+              />
+
+              <StyledInput
+                fullWidth
+                label="Number of Clinicians"
+                value={paymentDetails.clinicians}
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                  sx: { fontSize: '1.1rem', backgroundColor: '#f5f5f5' }
+                }}
+              />
+
+              <CardContainer>
+                <Typography variant="subtitle1" sx={{ mb: 2, color: '#666' }}>
+                  Enter Card Details
+                </Typography>
+                <CardElement options={{
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: '#424770',
+                      '::placeholder': {
+                        color: '#aab7c4',
+                      },
+                      padding: '10px 0',
+                    },
+                  },
+                }} />
+              </CardContainer>
+
+              <PaymentButton
+                fullWidth
+                type="submit"
+                disabled={!stripe || !elements || loading}
+                startIcon={loading && <CircularProgress size={20} color="inherit" />}
+              >
+                {loading ? 'Processing...' : `Pay $${paymentDetails.amount || '0'}`}
+              </PaymentButton>
+            </form>
+            
+            {paymentStatus && (
+              <Typography
+                sx={{
+                  mt: 3,
+                  p: 2,
+                  borderRadius: '12px',
+                  bgcolor: paymentStatus.includes('successful') ? 'rgba(72, 187, 120, 0.1)' : 'rgba(245, 101, 101, 0.1)',
+                  color: paymentStatus.includes('successful') ? '#2f855a' : '#c53030',
+                  border: `1px solid ${paymentStatus.includes('successful') ? '#48bb78' : '#f56565'}`,
+                  textAlign: 'center',
+                  fontSize: '1.1rem',
+                  fontWeight: 500,
+                }}
+              >
+                {paymentStatus}
+              </Typography>
+            )}
+          </FormContent>
+        </FormContainer>
+      </Container>
     </PageWrapper>
   );
 };
