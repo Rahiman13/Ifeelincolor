@@ -1278,7 +1278,9 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   },
   '& .MuiDialog-paper': {
     borderRadius: '24px',
+    // background: '#ffffff',
     background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+
     boxShadow: '0 24px 48px rgba(0, 0, 0, 0.2)',
     overflow: 'hidden',
     position: 'relative',
@@ -1299,14 +1301,17 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   }
 }));
 
+
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   position: 'relative',
   zIndex: 1,
   color: '#ffffff',
   padding: '32px',
   background: 'transparent',
-  display: 'flex',
-  alignItems: 'center',
+  display: 'flex !important',
+  // justifyContent: 'center',
+  flexDirection: 'row',
+  // alignItems: 'center',
   gap: '16px',
   borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
   '& .icon-wrapper': {
@@ -1916,7 +1921,7 @@ const PrivacyPolicyDialog = ({ open, onClose, isAdmin }) => {
 
   const fetchPrivacyPolicy = async () => {
     try {
-      const response = await axios.get('http://18.209.44.54:3000/api/privacy/latest');
+      const response = await axios.get(`${BaseUrl}/api/privacy/latest`);
       if (response.data.status === 'success') {
         setPrivacyData(response.data.body);
         setFormData({
@@ -1949,7 +1954,7 @@ const PrivacyPolicyDialog = ({ open, onClose, isAdmin }) => {
       if (privacyData?._id) {
         // Update existing policy
         response = await axios.put(
-          `http://18.209.44.54:3000/api/privacy/update/${privacyData._id}`,
+          `${BaseUrl}/api/privacy/update/${privacyData._id}`,
           payload,
           {
             headers: { Authorization: `Bearer ${token}` }
@@ -1958,7 +1963,7 @@ const PrivacyPolicyDialog = ({ open, onClose, isAdmin }) => {
       } else {
         // Create new policy
         response = await axios.post(
-          'http://18.209.44.54:3000/api/privacy/create',
+          `${BaseUrl}/api/privacy/create`,
           payload,
           {
             headers: { Authorization: `Bearer ${token}` }
@@ -2016,7 +2021,8 @@ const PrivacyPolicyDialog = ({ open, onClose, isAdmin }) => {
               {privacyData?.content}
             </Typography>
             <Typography variant="caption" color="textSecondary">
-              Last updated: {new Date(privacyData?.updatedAt).toLocaleDateString()}
+              {/* Last updated: {new Date(privacyData?.updatedAt).toLocaleDateString()} */}
+              Last updated: {privacyData?.updatedAt}
             </Typography>
           </Box>
         )}

@@ -150,7 +150,7 @@ const TrendyTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 // Updated MetricCard Component
-const MetricCard = ({ title, value, icon, gradient, percentage, onClick }) => (
+const MetricCard = ({ title, value, icon, gradient, description, onClick }) => (
     <Card
         sx={{
             height: '160px',
@@ -188,7 +188,8 @@ const MetricCard = ({ title, value, icon, gradient, percentage, onClick }) => (
             <Box>
                 <Typography variant="h4" sx={{ fontSize: '1.8rem', fontWeight: 600, mb: 1 }}>{value}</Typography>
                 <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'white', opacity: 0.8 }}>
-                    {percentage}
+                    {/* {percentage} */}
+                    {description}
                 </Typography>
                 <Icon path={icon} size={1.5} color="rgba(255,255,255,0.8)" />
             </Box>
@@ -197,7 +198,7 @@ const MetricCard = ({ title, value, icon, gradient, percentage, onClick }) => (
 );
 
 // Remove the old MetricCard component and replace with this new version
-const ModernMetricCard = ({ title, value, icon, gradient, percentage, onClick }) => (
+const ModernMetricCard = ({ title, value, icon, gradient, description, onClick }) => (
     <Card sx={{
         background: gradient || 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(20px)',
@@ -264,7 +265,8 @@ const ModernMetricCard = ({ title, value, icon, gradient, percentage, onClick })
                 alignItems: 'center',
                 gap: '0.5rem'
             }}>
-                {percentage}
+                {/* {percentage} */}
+                {description}
             </Typography>
             <Icon
                 path={icon}
@@ -767,25 +769,49 @@ class Dashboard extends Component {
 
         if (token) {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/${baseUrl}/subscription-counts`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-                const data = await response.json();
-                if (data.status === 'success') {
-                    const totalCount = data.body.totalCount; // Get total count from response
-                    const monthlyData = data.body.monthlyData; // Get monthly data for percentage calculation
+                // Fetch both subscription types in parallel
+                const [portalResponse, doctorPlanResponse, patientCountResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/${baseUrl}/subscriptions`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }),
+                    fetch(`${API_BASE_URL}/api/${baseUrl}/doctor-plan-subscriptions`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }),
+                    // New API call for total patients count
+                    fetch(`${API_BASE_URL}/api/patients/count`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                ]);
 
-                    // Calculate percentage increase based on previous month's count
-                    const previousMonthCount = monthlyData[Object.keys(monthlyData)[Object.keys(monthlyData).length - 2]] || 0; // Get previous month's count
+                const portalData = await portalResponse.json();
+                const doctorPlanData = await doctorPlanResponse.json();
+                const patientCountData = await patientCountResponse.json(); // New response
+
+                if (portalData.status === 'success' && doctorPlanData.status === 'success' && patientCountData.status === 'success') {
+                    // Calculate total subscriptions by adding counts from both APIs
+                    const totalCount = (portalData.count || 0) + (doctorPlanData.count || 0);
+                    const totalPatients = patientCountData.body.total; // Get total patients
+
+                    // Calculate percentage increase (you might want to adjust this logic based on your needs)
+                    const previousMonthCount = this.state.totalSubscriptions || 0;
                     const percentageIncrease = previousMonthCount ? ((totalCount - previousMonthCount) / previousMonthCount) * 100 : 0;
 
                     this.setState({
-                        totalSubscriptions: totalCount, // Update state with total subscriptions
-                        percentageIncrease: percentageIncrease.toFixed(2) + '%' // Store percentage increase
+                        totalSubscriptions: totalCount,
+                        totalPatients: totalPatients, // Update state with total patients
+                        percentageIncrease: percentageIncrease.toFixed(2) + '%'
                     });
                 }
             } catch (error) {
@@ -1023,98 +1049,110 @@ class Dashboard extends Component {
 
     fetchPatientDetails = async () => {
         const token = sessionStorage.getItem('token');
+        const adminPortal = sessionStorage.getItem('adminPortal');
         const baseUrl = this.getApiBaseUrl();
 
         if (token) {
             try {
                 this.setState({ isLoadingPatientDetails: true });
 
-                const [subscriptionsResponse, doctorPlansResponse] = await Promise.all([
+                // Create an array of promises for both API calls
+                const apiCalls = [
                     fetch(`${API_BASE_URL}/api/${baseUrl}/subscriptions`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json',
                         },
-                    }),
-                    fetch(`${API_BASE_URL}/api/${baseUrl}/doctor-plan-subscriptions-with-details`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        },
                     })
-                ]);
+                ];
 
-                const [subscriptionsData, doctorPlansData] = await Promise.all([
-                    subscriptionsResponse.json(),
-                    doctorPlansResponse.json()
-                ]);
+                // Only add the doctor-plan-subscriptions API call if adminPortal is true
+                if (adminPortal === 'true') {
+                    apiCalls.push(
+                        fetch(`${API_BASE_URL}/api/${baseUrl}/doctor-plan-subscriptions`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                    );
+                }
 
-                if (subscriptionsData.status === 'success' && doctorPlansData.status === 'success') {
-                    // Add null checks when mapping the data
-                    const patientDetails = [
-                        ...subscriptionsData.body.map(subscription => ({
-                            id: subscription._id,
-                            patientName: subscription.patient?.userName || 'N/A',
-                            image: subscription.patient?.image || '',
-                            email: subscription.patient?.email || 'N/A',
-                            mobile: subscription.patient?.mobile || 'N/A',
-                            patientlocation: subscription.patient?.location || 'N/A',
-                            subscriptionType: subscription.plan?.name || 'N/A',
-                            startDate: subscription.startDate ? moment(subscription.startDate).format('YYYY-MM-DD') : 'N/A',
-                            endDate: subscription.endDate ? moment(subscription.endDate).format('YYYY-MM-DD') : 'N/A',
-                            assignedDoctor: subscription.clinisist?.name || 'N/A',
-                            status: subscription.endDate && moment(subscription.endDate).isAfter(moment()) ? 'Active' : 'Expired',
-                            doctorName: subscription.clinisist?.name || 'N/A',
-                            doctorImage: subscription.clinisist?.image || null,
-                            doctorEmail: subscription.clinisist?.email || 'N/A',
-                            doctorMobile: subscription.clinisist?.mobile || 'N/A',
-                            planName: subscription.plan?.name || 'N/A',
-                            price: subscription.plan?.price || 0,
-                            validity: subscription.plan?.validity || 0,
-                            details: subscription.plan?.details || 'N/A',
-                        })),
-                        ...doctorPlansData.body.map(subscription => ({
-                            id: subscription.subscription?._id || 'N/A',
-                            patientName: subscription.patient?.userName || 'N/A',
-                            image: subscription.patient?.image || '',
-                            email: subscription.patient?.email || 'N/A',
-                            mobile: subscription.patient?.mobile || 'N/A',
-                            patientlocation: subscription.patient?.location || 'N/A',
-                            subscriptionType: subscription.plan?.name || 'N/A',
-                            startDate: subscription.subscription?.startDate ? moment(subscription.subscription.startDate).format('YYYY-MM-DD') : 'N/A',
-                            endDate: subscription.subscription?.endDate ? moment(subscription.subscription.endDate).format('YYYY-MM-DD') : 'N/A',
-                            assignedDoctor: subscription.clinician?.name || 'N/A',
-                            status: subscription.subscription?.endDate && moment(subscription.subscription.endDate).isAfter(moment()) ? 'Active' : 'Expired',
-                            doctorName: subscription.clinician?.name || 'N/A',
-                            doctorImage: subscription.clinician?.image || null,
-                            doctorEmail: subscription.clinician?.email || 'N/A',
-                            doctorMobile: subscription.clinician?.mobile || 'N/A',
-                            planName: subscription.plan?.name || 'N/A',
-                            price: subscription.plan?.price || 0,
-                            validity: subscription.plan?.validity || 0,
-                            details: subscription.plan?.details || 'N/A',
-                        }))
-                    ];
+                // Wait for all API calls to complete
+                const responses = await Promise.all(apiCalls);
+                const [subscriptionsData, doctorPlansData] = await Promise.all(
+                    responses.map(response => response.json())
+                );
+
+                if (subscriptionsData.status === 'success' && (!doctorPlansData || doctorPlansData.status === 'success')) {
+                    // Process regular subscriptions
+                    const regularSubscriptions = subscriptionsData.body.map(subscription => ({
+                        id: subscription._id,
+                        patientName: subscription.patient?.userName || 'N/A',
+                        image: subscription.patient?.image || '',
+                        email: subscription.patient?.email || 'N/A',
+                        mobile: subscription.patient?.mobile || 'N/A',
+                        patientlocation: subscription.patient?.location || 'N/A',
+                        subscriptionType: subscription.plan?.name || 'N/A',
+                        startDate: subscription.startDate ? moment(subscription.startDate).format('YYYY-MM-DD') : 'N/A',
+                        endDate: subscription.endDate ? moment(subscription.endDate).format('YYYY-MM-DD') : 'N/A',
+                        assignedDoctor: subscription.clinisist?.name || 'N/A',
+                        status: subscription.endDate && moment(subscription.endDate).isAfter(moment()) ? 'Active' : 'Expired',
+                        doctorName: subscription.clinisist?.name || 'N/A',
+                        doctorImage: subscription.clinisist?.image || null,
+                        doctorEmail: subscription.clinisist?.email || 'N/A',
+                        doctorMobile: subscription.clinisist?.mobile || 'N/A',
+                        planName: subscription.plan?.name || 'N/A',
+                        price: subscription.plan?.price || 0,
+                        validity: subscription.plan?.validity || 0,
+                        details: subscription.plan?.details || 'N/A',
+                    }));
+
+                    // Process doctor plan subscriptions if available
+                    const doctorPlanSubscriptions = doctorPlansData?.body?.map(subscription => ({
+                        id: subscription._id,
+                        patientName: subscription.patient?.userName || 'N/A',
+                        image: subscription.patient?.image || '',
+                        email: subscription.patient?.email || 'N/A',
+                        mobile: subscription.patient?.mobile || 'N/A',
+                        patientlocation: subscription.patient?.location || 'N/A',
+                        subscriptionType: 'Doctor Plan',
+                        startDate: subscription.startDate ? moment(subscription.startDate).format('YYYY-MM-DD') : 'N/A',
+                        endDate: subscription.endDate ? moment(subscription.endDate).format('YYYY-MM-DD') : 'N/A',
+                        assignedDoctor: subscription.clinisist?.name || 'N/A',
+                        status: subscription.endDate && moment(subscription.endDate).isAfter(moment()) ? 'Active' : 'Expired',
+                        doctorName: subscription.clinisist?.name || 'N/A',
+                        doctorImage: subscription.clinisist?.image || null,
+                        doctorEmail: subscription.clinisist?.email || 'N/A',
+                        doctorMobile: subscription.clinisist?.mobileNum || 'N/A',
+                        planName: subscription.plan?.name || 'N/A',
+                        price: subscription.plan?.price || 0,
+                        validity: subscription.plan?.validity || 0,
+                        details: subscription.plan?.details || 'N/A',
+                    })) || [];
+
+                    // Combine both arrays
+                    const combinedPatientDetails = [...regularSubscriptions, ...doctorPlanSubscriptions];
 
                     this.setState({
-                        patientDetails,
+                        patientDetails: combinedPatientDetails,
                         isLoadingPatientDetails: false
                     });
                 } else {
-                    throw new Error(subscriptionsData.message || doctorPlansData.message || 'Failed to fetch patient details');
+                    throw new Error(subscriptionsData.message || doctorPlansData?.message || 'Failed to fetch patient details');
                 }
             } catch (error) {
                 console.error('Error fetching patient details:', error);
                 this.setState({
                     patientDetailsError: error.message,
                     isLoadingPatientDetails: false,
-                    patientDetails: [] // Add empty array as fallback
+                    patientDetails: []
                 });
             }
         } else {
             this.setState({
                 isLoadingPatientDetails: false,
-                patientDetails: [] // Add empty array as fallback
+                patientDetails: []
             });
         }
     };
@@ -1500,7 +1538,8 @@ class Dashboard extends Component {
                                     value={this.state.totalPatients}
                                     icon={mdiAccount}
                                     gradient="linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)"
-                                    percentage={`↑ ${this.state.patientPercentageIncrease}`}
+                                    // percentage={`↑ ${this.state.patientPercentageIncrease}`}
+                                    description="Total Patients"
                                     onClick={() => this.props.navigate('/patient-management/view')}
                                 />
                                 <ModernMetricCard
@@ -1508,7 +1547,8 @@ class Dashboard extends Component {
                                     value={counts.totalDoctors.toString()}
                                     icon={mdiDoctor}
                                     gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                                    percentage={this.calculatePercentageIncrease(counts.totalDoctors, previousCounts.totalDoctors)}
+                                    // percentage={this.calculatePercentageIncrease(counts.totalDoctors, previousCounts.totalDoctors)}
+                                    description="Total Active Portal Clincians"
                                     onClick={() => this.props.navigate('/clinician-management/view_superadmin')}
                                 />
                                 <ModernMetricCard
@@ -1516,7 +1556,8 @@ class Dashboard extends Component {
                                     value={this.state.totalSubscriptions.toString()}
                                     icon={mdiDiamond}
                                     gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                                    percentage={`↑ ${this.state.percentageIncrease}`}
+                                    // percentage={`↑ ${this.state.percentageIncrease}`}
+                                    description="Total Patient Subscriptions"
                                     onClick={() => this.props.navigate('/subscription-management/portal')}
                                 />
                                 <ModernMetricCard
@@ -1524,7 +1565,8 @@ class Dashboard extends Component {
                                     value={`$ ${this.state.totalEarnings.toFixed(2)}`}
                                     icon={mdiCashMultiple}
                                     gradient="linear-gradient(135deg, #d35400 0%, #d35400 100%)"
-                                    percentage={`↑ ${this.state.earningsPercentageIncrease}`}
+                                    // percentage={`↑ ${this.state.earningsPercentageIncrease}`}
+                                    description="Current Month Earnings"
                                     onClick={() => this.props.navigate('/subscription-budget-analysis/overview_superadmin')}
                                 />
                             </Box>
@@ -1780,7 +1822,20 @@ class Dashboard extends Component {
                                                                             </Box>
                                                                         </Box>
                                                                     ) : (
-                                                                        <Typography variant="body2" color="text.disabled">N/A</Typography>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                            <InfoIcon sx={{ bgcolor: alpha('#2196f3', 0.1) }}>
+                                                                                <LocalHospitalIcon sx={{ color: '#2196f3' }} />
+                                                                            </InfoIcon>
+                                                                            <Typography 
+                                                                                variant="body2" 
+                                                                                sx={{ 
+                                                                                    fontWeight: 500,
+                                                                                    color: '#2196f3'
+                                                                                }}
+                                                                            >
+                                                                                Portal Clinician
+                                                                            </Typography>
+                                                                        </Box>
                                                                     )}
                                                                 </StyledTableCell>
 

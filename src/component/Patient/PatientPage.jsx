@@ -718,16 +718,17 @@ export default function Component() {
           email: patient.email,
           mobile: patient.mobile || 'N/A',
           subscriptionType: 'Portal',
-          planName: 'Basic Plan', // You might want to update this based on actual plan data
+          planName: 'Basic Plan',
           details: 'Standard patient portal access',
-          startDate: new Date().toLocaleDateString(), // Update with actual subscription dates
+          startDate: new Date().toLocaleDateString(),
           endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString(),
           avatarSrc: patient.image || "/placeholder-user.jpg",
           avatarFallback: patient.userName.split(' ').map(n => n[0]).join(''),
           verified: patient.verified,
           location: patient.location,
           guardian: patient.guardian,
-          dateOfBirth: patient.dateOfBirth
+          dateOfBirth: patient.dateOfBirth,
+          
         }));
 
         setPortalPatients(formattedData);
@@ -806,6 +807,9 @@ export default function Component() {
           name: item.patient?.userName,
           email: item.patient?.email,
           mobile: item.patient?.mobile,
+          dateOfBirth: item.patient?.dateOfBirth,
+          guardian: item.patient?.guardian,
+          location: item.patient?.location,
           subscriptionType: 'Clinician',
           clinician: {
             name: item.clinisist?.name,
@@ -855,7 +859,7 @@ export default function Component() {
   // Update the getFilteredUsers function
   const getFilteredUsers = () => {
     let users = [];
-    
+
     // First, apply the type filter
     switch (filterType) {
       case 'portal':
@@ -883,7 +887,7 @@ export default function Component() {
           user.clinician?.specialization?.toLowerCase(),
           user.planName?.toLowerCase()
         ];
-        
+
         // Return true if any of the fields contain the search query
         return searchFields.some(field => field?.includes(query));
       });
@@ -1515,10 +1519,16 @@ export default function Component() {
                       <TableRow>
                         <StyledHeaderCell width="20%">Patient Details</StyledHeaderCell>
                         <StyledHeaderCell width="20%">Contact Information</StyledHeaderCell>
-                        <StyledHeaderCell width="20%">Subscription Details</StyledHeaderCell>
-                        <StyledHeaderCell width="20%">Clinician Details</StyledHeaderCell>
-                        <StyledHeaderCell width="10%">Status</StyledHeaderCell>
-                        <StyledHeaderCell width="10%">Action</StyledHeaderCell>
+                        {filterType !== 'all' && (
+                          <StyledHeaderCell width="20%">Subscription Details</StyledHeaderCell>
+                        )}
+                        {filterType !== 'all' && (
+                          <StyledHeaderCell width="20%">Clinician Details</StyledHeaderCell>
+                        )}
+                        {filterType !== 'all' && (
+                          <StyledHeaderCell width="10%">Status</StyledHeaderCell>
+                        )}
+                        <StyledHeaderCell width="10%" align="center">Action</StyledHeaderCell>
                       </TableRow>
                     </StyledTableHead>
                     <TableBody>
@@ -1586,92 +1596,102 @@ export default function Component() {
                                 </Box>
                               </StyledTableCell>
 
-                              <StyledTableCell>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <InfoIcon sx={{ bgcolor: alpha('#9c27b0', 0.1) }}>
-                                      <LocalHospitalIcon sx={{ color: '#9c27b0' }} />
-                                    </InfoIcon>
-                                    <Box>
-                                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                        {user.planName}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        {user.details}
-                                      </Typography>
+                              {filterType !== 'all' && (
+                                <StyledTableCell>
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                      <InfoIcon sx={{ bgcolor: alpha('#9c27b0', 0.1) }}>
+                                        <LocalHospitalIcon sx={{ color: '#9c27b0' }} />
+                                      </InfoIcon>
+                                      <Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                          {user.planName}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          {user.details}
+                                        </Typography>
+                                      </Box>
                                     </Box>
                                   </Box>
-                                </Box>
-                              </StyledTableCell>
+                                </StyledTableCell>
+                              )}
 
-                              <StyledTableCell>
-                                {user.subscriptionType !== 'Portal' ? (
-                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <InfoIcon sx={{ bgcolor: alpha('#ff9800', 0.1) }}>
-                                      <LocalHospitalIcon sx={{ color: '#ff9800' }} />
-                                    </InfoIcon>
-                                    <Box>
-                                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                        {user.clinician?.name}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        {user.clinician?.specialization}
-                                      </Typography>
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          display: 'block',
-                                          color: 'text.disabled',
-                                          fontSize: '0.7rem'
-                                        }}
-                                      >
-                                        {user.clinician?.degree}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        {user.clinician?.licenseNumber}
-                                      </Typography>
-                                    </Box>
+                              {filterType !== 'all' && (
+                                <StyledTableCell>
+                                  {user.subscriptionType === 'Portal' ? (
+                                    user.clinician ? (
+                                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <InfoIcon sx={{ bgcolor: alpha('#ff9800', 0.1) }}>
+                                          <LocalHospitalIcon sx={{ color: '#ff9800' }} />
+                                        </InfoIcon>
+                                        <Box>
+                                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                            {user.clinician.name}
+                                          </Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {user.clinician.specialization}
+                                          </Typography>
+                                          <Typography
+                                            variant="caption"
+                                            sx={{
+                                              display: 'block',
+                                              color: 'text.disabled',
+                                              fontSize: '0.7rem'
+                                            }}
+                                          >
+                                            {user.clinician.degree}
+                                          </Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {user.clinician.licenseNumber}
+                                          </Typography>
+                                        </Box>
+                                      </Box>
+                                    ) : (
+                                      <Typography variant="body2" color="text.disabled">No Clinician Assigned</Typography>
+                                    )
+                                  ) : (
+                                    // Original clinician display logic for non-portal patients
+                                    user.clinician ? (
+                                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <InfoIcon sx={{ bgcolor: alpha('#ff9800', 0.1) }}>
+                                          <LocalHospitalIcon sx={{ color: '#ff9800' }} />
+                                        </InfoIcon>
+                                        <Box>
+                                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                            {user.clinician.name}
+                                          </Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {user.clinician.specialization}
+                                          </Typography>
+                                          <Typography
+                                            variant="caption"
+                                            sx={{
+                                              display: 'block',
+                                              color: 'text.disabled',
+                                              fontSize: '0.7rem'
+                                            }}
+                                          >
+                                            {user.clinician.degree}
+                                          </Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {user.clinician.licenseNumber}
+                                          </Typography>
+                                        </Box>
+                                      </Box>
+                                    ) : (
+                                      <Typography variant="body2" color="text.disabled">N/A</Typography>
+                                    )
+                                  )}
+                                </StyledTableCell>
+                              )}
+
+                              {filterType !== 'all' && (
+                                <StyledTableCell>
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    <StatusChip label={user.status || 'N/A'} status={user.status ? 'Active' : 'Expired'} size="small" />
                                   </Box>
-                                ) : (
-                                  <Typography variant="body2" color="text.disabled">N/A</Typography>
-                                )}
-                              </StyledTableCell>
-
-                              <StyledTableCell>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                  {/* <StatusChip
-                                    label={new Date(user.endDate) > new Date() ? 'Active' : 'Expired'}
-                                    status={new Date(user.endDate) > new Date() ? 'Active' : 'Expired'}
-                                    size="small"
-                                  /> */}
-                                  <StatusChip label={user.status || 'N/A'} status={user.status?'Active':'Expired'} size="small" />
-
-                                  {/* <Box>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: 'text.secondary',
-                                        display: 'block',
-                                        mb: 0.5
-                                      }}
-                                    >
-                                      {user.startDate} - {user.endDate}
-                                    </Typography>
-                                    <LinearProgress
-                                      variant="determinate"
-                                      value={calculateProgress(user.startDate, user.endDate)}
-                                      sx={{
-                                        height: 4,
-                                        borderRadius: 2,
-                                        bgcolor: alpha('#000', 0.05),
-                                        '& .MuiLinearProgress-bar': {
-                                          bgcolor: new Date(user.endDate) > new Date() ? 'success.main' : 'error.main',
-                                        }
-                                      }}
-                                    />
-                                  </Box> */}
-                                </Box>
-                              </StyledTableCell>
+                                </StyledTableCell>
+                              )}
                               <StyledTableCell>
                                 <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, justifyContent: 'center' }}>
                                   <Tooltip
@@ -1710,9 +1730,7 @@ export default function Component() {
                                       }
                                     }}
                                   >
-                                    {/* <ActionButton> */}
                                     <ActionButton onClick={() => handleDeletePatient(user.id)}>
-
                                       <DeleteIcon
                                         sx={{
                                           fontSize: '1.2rem',
@@ -1892,7 +1910,7 @@ export default function Component() {
                 transition: 'all 0.2s ease'
               }}
             >
-              {isSubmitting ? <CircularProgress size={24} sx={{color:'#fff'}} /> : 'Create Patient'}
+              {isSubmitting ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Create Patient'}
             </Button>
           </Box>
         </StyledDialogContent>

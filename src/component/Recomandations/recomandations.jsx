@@ -680,7 +680,10 @@ const Recommendations = () => {
   const fetchPatients = async () => {
     setIsLoadingPatients(true);
     const token = sessionStorage.getItem('token');
-    const baseUrl = getApiBaseUrl();
+    const adminPortal = sessionStorage.getItem('adminPortal');
+    const role = sessionStorage.getItem('role');
+    
+    const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
     if (token) {
       try {
@@ -704,7 +707,7 @@ const Recommendations = () => {
 
     if (token) {
       try {
-        const response = await axios.get(`${BaseUrl}/api/${baseUrl}/doctor-plan-subscriptions-with-details`, {
+        const response = await axios.get(`${BaseUrl}/api/${baseUrl}/doctor-plan-subscriptions`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -1179,7 +1182,7 @@ const Recommendations = () => {
             ))
           ) : (
             clinicianPatients.map((patientData, index) => (
-              <Grid item xs={12} sm={6} md={4} key={patientData.patient._id}>
+              <Grid item xs={12} sm={6} md={4} key={patientData._id}>
                 <PatientCard
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1189,13 +1192,13 @@ const Recommendations = () => {
                   onClick={() => handlePatientClick(patientData)}
                 >
                   <Avatar
-                    src={patientData.patient.image}
-                    alt={patientData.patient.userName}
+                    src={patientData.patient?.image || 'default_image_url'}
+                    alt={patientData.patient?.userName || 'Unknown Patient'}
                     sx={{ width: 80, height: 80, mb: 2 }}
                   />
-                  <Typography variant="h6" gutterBottom>{patientData.patient.userName}</Typography>
-                  <Typography variant="body2" gutterBottom>{patientData.patient.email}</Typography>
-                  <Typography variant="body2" gutterBottom>{patientData.patient.location || 'Location not specified'}</Typography>
+                  <Typography variant="h6" gutterBottom>{patientData.patient?.userName || 'Unknown Patient'}</Typography>
+                  <Typography variant="body2" gutterBottom>{patientData.patient?.email || 'No email provided'}</Typography>
+                  <Typography variant="body2" gutterBottom>{patientData.patient?.location || 'Location not specified'}</Typography>
                   <Typography variant="body2" sx={{ mt: 2 }}>
                     Plan: {patientData.plan?.name || 'No plan specified'}
                   </Typography>

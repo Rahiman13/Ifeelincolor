@@ -2605,7 +2605,8 @@ export default function MoodAssessments() {
                             alt="Assessment media"
                             style={{
                               maxWidth: '100%',
-                              height: 'auto',
+                              height: '200px',
+                              width: '250px',
                               borderRadius: '8px'
                             }}
                           />

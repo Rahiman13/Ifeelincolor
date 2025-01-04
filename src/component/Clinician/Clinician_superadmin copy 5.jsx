@@ -17,7 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Container, Row, Col } from 'react-bootstrap';
-import { mdiAlertCircleOutline, mdiMagnify, mdiCalendar, mdiNumeric, mdiMedicalBag, mdiClock, mdiMapMarker, mdiCheckboxMarkedCircleOutline, mdiCloseCircleOutline } from '@mdi/js';
+import { mdiAlertCircleOutline, mdiMagnify } from '@mdi/js';
 import { FaUserMd, FaGraduationCap, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
 // import { Grid, Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from '@mui/material';
 import Timeline from '@mui/lab/Timeline';
@@ -695,30 +695,28 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
         backdropFilter: 'blur(8px)',
     },
     '& .MuiDialog-paper': {
-        borderRadius: '16px',
+        borderRadius: '24px',
+        // background: '#ffffff',
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        color: 'white',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-        maxWidth: '800px', // Set a larger width for the modal
-        width: '90%', // Responsive width
-    },
-}));
 
-const StyledButton = styled(Button)(({ theme }) => ({
-    borderRadius: '12px',
-    padding: '10px 20px',
-    transition: 'background 0.3s ease, transform 0.3s ease',
-    '&:hover': {
-        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-        transform: 'translateY(-2px)',
-    },
-}));
-
-const LicenseImage = styled('img')(({ theme }) => ({
-    width: '100%',
-    height: 'auto',
-    borderRadius: '8px',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+        boxShadow: '0 24px 48px rgba(0, 0, 0, 0.2)',
+        overflow: 'hidden',
+        position: 'relative',
+        maxWidth: '600px',
+        width: '100%',
+        margin: '16px',
+        fontFamily: "'Poppins', sans-serif",
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '200px',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            zIndex: 0,
+        }
+    }
 }));
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
@@ -1327,9 +1325,8 @@ const ClinicianPage = () => {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedClinicianForEdit, setSelectedClinicianForEdit] = useState(null);
     const [activeFilter, setActiveFilter] = useState('all'); // Add state for active filter
-    const [selectedClinicianDetails, setSelectedClinicianDetails] = useState(null);
-    const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-    const [loadingVerification, setLoadingVerification] = useState(false);
+
+
 
     useEffect(() => {
         setAdminPortal(sessionStorage.getItem('adminPortal'));
@@ -1487,7 +1484,6 @@ const ClinicianPage = () => {
                                     Cancel
                                 </Button>
                                 <Button
-                                    onClick={handleSubmit}
                                     type="submit"
                                     variant="contained"
                                     disabled={loading}
@@ -1642,8 +1638,8 @@ const ClinicianPage = () => {
     };
 
     const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
+        setRowsPerPage(parseInt(event.target.value, 10))
+        setPage(0)
     };
 
     const handleDateChange = (type) => (date) => {
@@ -1838,16 +1834,10 @@ const ClinicianPage = () => {
         setAnchorEl(null); // Close dropdown
     };
 
-    const handleFilterSelect = async (filter) => {
+    const handleFilterSelect = (filter) => {
         setActiveFilter(filter);
         setPage(0);
         handleClose();
-
-        if (filter === 'non-verified') {
-            await fetchNonVerifiedClinicians(); // Fetch non-verified clinicians when selected
-        } else {
-            fetchClinicians(); // Fetch all clinicians when 'all' is selected
-        }
     };
 
     const handleViewDetails = async (doctorId) => {
@@ -1919,19 +1909,7 @@ const ClinicianPage = () => {
                     transition: 'all 0.3s ease',
                 }
             }}>
-                {clinician.verified === "no" && (
-                    <Tooltip title="Verify Clinician" arrow placement="top">
-                        <span>
-                            <ActionButton
-                                color="view"
-                                onClick={() => fetchClinicianDetails(clinician._id)} // Fetch details on click
-                            >
-                                <Icon path={mdiCloseCircleOutline} size={1} color="grey" />
 
-                            </ActionButton>
-                        </span>
-                    </Tooltip>
-                )}
                 <Tooltip
                     title="View Details"
                     arrow
@@ -2274,7 +2252,7 @@ const ClinicianPage = () => {
 
         // Apply active/inactive filter
         if (activeFilter === "non-verified") {
-            filteredClinicians = filteredClinicians.filter(clinician => clinician.verified === "no");
+            filteredClinicians = filteredClinicians.filter(clinician => !clinician.verified);
         }
 
         // ... existing pagination logic ...
@@ -2341,170 +2319,6 @@ const ClinicianPage = () => {
         link.click();
         document.body.removeChild(link);
     };
-
-    const fetchNonVerifiedClinicians = async () => {
-        try {
-            const token = sessionStorage.getItem('token');
-            const role = sessionStorage.getItem('role');
-            const endpoint = role === 'assistant' ? `${BaseUrl}/api/assistant/non-verified-clinicians` : `${BaseUrl}/api/admin/non-verified-clinicians`;
-            const response = await axios.get(endpoint, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.data.status === 'success') {
-                setClinicians(response.data.body); // Update clinicians state with fetched data
-            } else {
-                toast.error(response.data.message || 'Failed to fetch non-verified clinicians');
-            }
-        } catch (error) {
-            console.error('Error fetching non-verified clinicians:', error);
-            toast.error('Failed to fetch non-verified clinicians');
-        }
-    };
-
-    // Function to fetch clinician details
-    const fetchClinicianDetails = async (clinicianId) => {
-        try {
-            const token = sessionStorage.getItem('token');
-            const response = await axios.get(`${BaseUrl}/api/patients/get-doctor/${clinicianId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.data.status === 'success') {
-                setSelectedClinicianDetails(response.data.body);
-                setDetailsDialogOpen(true); // Open the dialog
-            } else {
-                toast.error(response.data.message || 'Failed to fetch clinician details');
-            }
-        } catch (error) {
-            console.error('Error fetching clinician details:', error);
-            toast.error('Failed to fetch clinician details');
-        }
-    };
-
-    // Function to verify clinician
-    const verifyClinician = async (clinicianId) => {
-        setLoadingVerification(true); // Set loading state to true
-        try {
-            const token = sessionStorage.getItem('token');
-            const role = sessionStorage.getItem('role');
-            const endpoint = role === 'assistant' ? `${BaseUrl}/api/assistant/verify-doctor/${clinicianId}` : `${BaseUrl}/api/admin/verify-doctor/${clinicianId}`;
-            const response = await axios.put(endpoint, {}, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            console.log(response.data);
-
-            if (response.data.message === 'Clinician verified successfully') {
-                toast.success('Clinician verified successfully');
-                fetchClinicians(); // Refresh the list of clinicians
-                setDetailsDialogOpen(false); // Close the dialog after successful verification
-                setSelectedClinicianDetails(null); // Clear selected clinician details
-            } else {
-                toast.error(response.data.message || 'Failed to verify clinician');
-            }
-        } catch (error) {
-            console.error('Error verifying clinician:', error);
-            toast.error('Failed to verify clinician');
-        } finally {
-            setLoadingVerification(false); // Reset loading state
-            setDetailsDialogOpen(false); // Close the dialog after successful verification
-        }
-    };
-
-    // Dialog to display clinician details
-    const DetailsDialog = () => (
-        <StyledDialog open={detailsDialogOpen} onClose={() => setDetailsDialogOpen(false)}>
-            <DialogTitle>
-                {selectedClinicianDetails ? `Verify ${selectedClinicianDetails.name}` : 'Clinician Details'}
-            </DialogTitle>
-            <StyledDialogContent>
-                {selectedClinicianDetails ? (
-                    <Box>
-                        <Grid container spacing={2} sx={{ color: 'black' }}>
-                            <Grid item xs={12} md={6}>
-                                <Box display="flex-1" alignItems="center" justifyContent="center">
-                                    <Avatar
-                                        src={selectedClinicianDetails.image || '/default-avatar.png'} // Use a default image if none is provided
-                                        alt={selectedClinicianDetails.name}
-                                        sx={{ width: 150, height: 150, border: '4px solid white', boxShadow: 3 }}
-                                    />
-
-                                    <InfoSection>
-                                        <Typography variant="h5" fontWeight="bold">{selectedClinicianDetails.name}</Typography>
-                                        <Typography variant="body1"><strong>Email:</strong> {selectedClinicianDetails.email}</Typography>
-                                    </InfoSection>
-                                </Box>
-                            </Grid>
-                            <Grid item xs={12} md={6} >
-                                <InfoSection display="flex-1" gap={1} space-x-4>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                        {/* <Icon path={FaBadge} size={1} color="primary" /> */}
-                                        {/* <FaBadge /> */}
-                                        <Typography variant="body1"><strong>License Number:</strong> {selectedClinicianDetails.licenseNumber || 'N/A'}</Typography>
-                                    </Box>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                        <Icon path={mdiCalendar} size={1} color="primary" />
-                                        <Typography variant="body1"><strong>License Expiration:</strong> {new Date(selectedClinicianDetails.licenseExpirationDate).toLocaleDateString() || 'N/A'}</Typography>
-                                    </Box>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                        <Icon path={mdiNumeric} size={1} color="primary" />
-                                        <Typography variant="body1"><strong>NPI Number:</strong> {selectedClinicianDetails.npiNumber || 'N/A'}</Typography>
-                                    </Box>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                        <Icon path={mdiMedicalBag} size={1} color="primary" />
-                                        <Typography variant="body1"><strong>Specialization:</strong> {selectedClinicianDetails.specializedIn || 'N/A'}</Typography>
-                                    </Box>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                        <Icon path={mdiClock} size={1} color="primary" />
-                                        <Typography variant="body1"><strong>Experience:</strong> {selectedClinicianDetails.experience || 'N/A'}</Typography>
-                                    </Box>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                        <Icon path={mdiMapMarker} size={1} color="primary" />
-                                        <Typography variant="body1"><strong>Location:</strong> {selectedClinicianDetails.location || 'N/A'}</Typography>
-                                    </Box>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                    </Box>
-                                    <Box display="flex" alignItems="center" gap={1} className='mb-2'>
-                                        {/* <Icon path={mdiVerify} size={1} color="primary" /> */}
-                                        <Chip label={selectedClinicianDetails.Active === 'yes' ? 'Active' : 'Inactive'} color={selectedClinicianDetails.Active === 'yes' ? 'success' : 'error'} />
-                                        {/* <Icon path={selectedClinicianDetails.Active === 'yes' ? mdiCheckboxMarkedCircleOutline : mdiCloseCircleOutline} size={1} color="primary" /> */}
-                                        <Chip label={`Verified: ${selectedClinicianDetails.verified}`} color={selectedClinicianDetails.verified === 'yes' ? 'success' : 'error'} />
-                                    </Box>
-                                </InfoSection>
-                            </Grid>
-                        </Grid>
-                        <InfoSection mt={3}>
-                            <Typography variant="h6" fontWeight="bold" color="primary">License Image</Typography>
-                            <LicenseImage src={selectedClinicianDetails.licenseImage || '/default-license.png'} alt="License" />
-                        </InfoSection>
-                    </Box>
-                ) : (
-                    <Typography variant="body1">Loading clinician details...</Typography> // Loading state
-                )}
-            </StyledDialogContent>
-            <DialogActions>
-                <Button onClick={() => setDetailsDialogOpen(false)} color="inherit">
-                    Close
-                </Button>
-                <StyledButton
-                    onClick={() => selectedClinicianDetails && verifyClinician(selectedClinicianDetails._id)} // Ensure selectedClinicianDetails is not null
-                    variant="contained"
-                    disabled={!selectedClinicianDetails || loadingVerification} // Disable button if no details are available or if loading
-                    className="flex items-center gap-2"
-                >
-                    {loadingVerification ? <CircularProgress size={24}  /> : <Icon path={mdiCheckboxMarkedCircleOutline} size={1} color="primary" />}
-                    Verify
-                </StyledButton>
-            </DialogActions>
-        </StyledDialog>
-    );
 
     return (
         <ThemeProvider theme={theme}>
@@ -2735,6 +2549,7 @@ const ClinicianPage = () => {
                                                 onClose={handleClose}
                                             >
                                                 <StyledMenuItem onClick={() => handleFilterSelect('all')} selected={activeFilter === 'all'}>
+
                                                     All Clinicians
                                                 </StyledMenuItem>
                                                 <StyledMenuItem onClick={() => handleFilterSelect('non-verified')} selected={activeFilter === 'non-verified'}>
@@ -2888,14 +2703,13 @@ const ClinicianPage = () => {
                                             </TableBody>
                                         </StyledTable>
                                         <StyledTablePagination
-                                            rowsPerPageOptions={[5, 10, 25]}
                                             component="div"
-                                            count={clinicians.length} // Total number of clinicians
-                                            rowsPerPage={rowsPerPage}
+                                            count={getFilteredClinicians().length}
                                             page={page}
                                             onPageChange={handleChangePage}
+                                            rowsPerPage={rowsPerPage}
                                             onRowsPerPageChange={handleChangeRowsPerPage}
-                                            labelDisplayedRows={({ from, to, count }) => `${from}-${Math.min(to, count)} of ${count}`} // Update this line
+                                            rowsPerPageOptions={[5, 10, 25]}
                                         />
                                     </StyledTableContainer>
                                 </StyledTableContainerHeader>
@@ -2918,7 +2732,6 @@ const ClinicianPage = () => {
                 clinician={selectedClinicianForEdit}
                 onSave={handleEditSave}
             />
-            <DetailsDialog /> {/* Include the dialog here */}
 
         </ThemeProvider>
     );

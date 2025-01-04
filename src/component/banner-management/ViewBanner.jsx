@@ -19,7 +19,8 @@ import {
   keyframes,
   CircularProgress,
   Chip,
-  Tooltip
+  Tooltip,
+  MenuItem
 } from '@mui/material';
 import Icon from '@mdi/react';
 import {
@@ -197,7 +198,7 @@ const ContentWrapper = styled(Box)({
   }
 });
 
-const StatusBadge = styled(Box)(({ isActive }) => ({
+const StatusBadge = styled(Box)(({ isactive }) => ({
   position: 'absolute',
   top: '16px',
   left: '16px',
@@ -208,10 +209,10 @@ const StatusBadge = styled(Box)(({ isActive }) => ({
   borderRadius: '20px',
   fontSize: '0.75rem',
   fontWeight: 600,
-  backgroundColor: isActive
+  backgroundColor: isactive
     ? 'rgba(34, 197, 94, 0.1)'
     : 'rgba(239, 68, 68, 0.1)',
-  color: isActive ? '#16a34a' : '#dc2626',
+  color: isactive ? '#16a34a' : '#dc2626',
   backdropFilter: 'blur(4px)',
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   zIndex: 1,
@@ -525,6 +526,9 @@ const MediaUploadZone = styled(Box)({
   }
 });
 
+// Add this constant for announcement types
+const ANNOUNCEMENT_TYPES = ['All', 'Clinicians', 'Managers', 'Organizations', 'Patients', 'Assistants'];
+
 // Update the AddBannerModal component
 const AddBannerModal = ({ show, handleClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -533,6 +537,7 @@ const AddBannerModal = ({ show, handleClose, onSubmit }) => {
     media: null,
     startDate: new Date(),
     endDate: new Date(),
+    type: 'All', // Add default type
   });
 
   const handleFileChange = (event) => {
@@ -560,6 +565,21 @@ const AddBannerModal = ({ show, handleClose, onSubmit }) => {
       </StyledDialogTitle>
       <StyledDialogContent>
         <form onSubmit={handleSubmit}>
+          <TextField
+            select
+            fullWidth
+            label="Announcement Type"
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            required
+            sx={{ mb: 3, mt: 2 }}
+          >
+            {ANNOUNCEMENT_TYPES.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </TextField>
           <StyledTextField
             fullWidth
             label="Title"
@@ -710,7 +730,8 @@ const EditBannerModal = ({ show, handleClose, announcement, onSave }) => {
     startDate: announcement?.startDate ? new Date(announcement.startDate) : new Date(),
     endDate: announcement?.endDate ? new Date(announcement.endDate) : new Date(),
     media: announcement?.media || null,
-    newMedia: null
+    newMedia: null,
+    type: announcement?.type || 'All', // Add type field
   });
 
   const handleFileChange = (event) => {
@@ -743,6 +764,23 @@ const EditBannerModal = ({ show, handleClose, announcement, onSave }) => {
       </StyledDialogTitle>
       <StyledDialogContent>
         <form onSubmit={handleSubmit}>
+          {/* Add type selection before title */}
+          <TextField
+            select
+            fullWidth
+            label="Announcement Type"
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            required
+            sx={{ mb: 3, mt: 2 }}
+          >
+            {ANNOUNCEMENT_TYPES.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </TextField>
+
           {/* Media Preview Section */}
 
 
@@ -1028,10 +1066,23 @@ const BannerCard = ({ announcement, onEdit, onDelete }) => {
               </Typography>
             </Box>
           )}
-          <StatusBadge isActive={isActiveStatus}>
+          <StatusBadge isactive={isActiveStatus.toString()}>
             <Icon path={mdiCircle} size={0.5} />
             {isActiveStatus ? 'Active' : 'Inactive'}
           </StatusBadge>
+          <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 2 }}>
+            <Chip
+              label={announcement.type}
+              size="small"
+              sx={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(4px)',
+                fontWeight: 600,
+                color: '#1e293b',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              }}
+            />
+          </Box>
         </MediaWrapper>
 
         <ContentWrapper>
@@ -1424,6 +1475,7 @@ const BannerManagementPage = () => {
       form.append('content', formData.content);
       form.append('startDate', formData.startDate.toISOString());
       form.append('endDate', formData.endDate.toISOString());
+      form.append('type', formData.type);
       if (formData.media) {
         form.append('media', formData.media);
       }
@@ -1442,10 +1494,12 @@ const BannerManagementPage = () => {
         await fetchAnnouncements();
         setShowAddModal(false);
         toast.success('🎉 Announcement added successfully!');
+      } else {
+        toast.error(response.data.message || 'Failed to add announcement');
       }
     } catch (error) {
-      toast.error('Failed to add announcement');
       console.error('Add error:', error);
+      toast.error(error.response?.data?.message || 'Failed to add announcement');
     }
   };
 
@@ -1496,6 +1550,7 @@ const BannerManagementPage = () => {
       form.append('content', formData.content);
       form.append('startDate', formData.startDate.toISOString());
       form.append('endDate', formData.endDate.toISOString());
+      form.append('type', formData.type);
 
       // Only append media if a new file was selected
       if (formData.newMedia) {
@@ -1539,6 +1594,7 @@ const BannerManagementPage = () => {
         draggable
         pauseOnHover
         theme="colored"
+        limit={3}
       />
 
       <StyledPageHeader>

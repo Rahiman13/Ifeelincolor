@@ -719,7 +719,7 @@ export default function ClinicianSubscription() {
                             <Box
                               sx={{
                                 position: 'absolute',
-                                bottom: '-24px',
+                                bottom: '-16px',
                                 right: '0',
                                 color: 'rgba(255, 255, 255, 0.6)',
                                 fontSize: '0.75rem',

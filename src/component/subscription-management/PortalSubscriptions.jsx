@@ -432,8 +432,8 @@ export default function PortalSubscription() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(sub =>
-        sub.patient.userName?.toLowerCase().includes(query) ||
-        sub.patient.email?.toLowerCase().includes(query)
+        sub.patient && sub.patient.userName && sub.patient.userName.toLowerCase().includes(query) ||
+        sub.patient && sub.patient.email && sub.patient.email.toLowerCase().includes(query)
       );
     }
 
@@ -744,8 +744,9 @@ export default function PortalSubscription() {
                         <Box
                           sx={{
                             position: 'absolute',
-                            bottom: '-10px',
-                            left: '350px',
+                            bottom: '-16px',
+                            right: '0',
+
                             color: 'rgba(255, 255, 255, 0.6)',
                             fontSize: '0.75rem',
                             fontStyle: 'italic',
@@ -762,8 +763,8 @@ export default function PortalSubscription() {
                             color="rgba(255, 255, 255, 0.6)"
                           />
                           {`Found ${getAllSubscriptions().filter(sub =>
-                            sub.patient.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            sub.patient.email?.toLowerCase().includes(searchQuery.toLowerCase())
+                            sub.patient?.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            sub.patient?.email?.toLowerCase().includes(searchQuery.toLowerCase())
                           ).length} results`}
                         </Box>
                       </Box>

@@ -837,7 +837,8 @@ const PlanForm = ({ plan, onSave, onCancel, isAdmin, isAdminPortal }) => {
         fullWidth
         label="Price (in USD)"
         name="price"
-        type="number"
+        type="text"
+        inputProps={{ pattern: "[0-9]*([.,][0-9]+)?" }}
         value={formData.price}
         onChange={handleChange}
         margin="normal"

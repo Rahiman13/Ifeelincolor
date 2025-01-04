@@ -442,13 +442,12 @@ const PlansManagement = () => {
   const [bodyPartSectionExpanded, setBodyPartSectionExpanded] = useState(false);
   const [clinicianPlans, setClinicianPlans] = useState([]);
   const [clinicianPlanSectionExpanded, setClinicianPlanSectionExpanded] = useState(true);
-  // const [planType, setPlanType] = useState('patient');
+  const [planType, setPlanType] = useState('patient');
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openClinicianModal, setOpenClinicianModal] = useState(false);
   const [openEditClinicianModal, setOpenEditClinicianModal] = useState(false);
   const [selectedClinicianPlan, setSelectedClinicianPlan] = useState(null);
-  const [planCategory, setPlanCategory] = useState('patient');
 
   useEffect(() => {
     const role = sessionStorage.getItem('role');
@@ -467,47 +466,49 @@ const PlansManagement = () => {
       const token = sessionStorage.getItem('token');
       const organizationId = sessionStorage.getItem('OrganizationId');
       const role = sessionStorage.getItem('role');
-      const adminPortal = sessionStorage.getItem('adminPortal');
-      const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
+      // if (!token || !organizationId) {
+      //   throw new Error('No authorization token or organization ID found');
+      // }
 
-      // Define the URLs for the two endpoints
-      const doctorPlansUrl = `${BaseUrl}/api/${baseUrl}/list-doctor-plans`;
-      const portalPlansUrl = `${BaseUrl}/api/${baseUrl}/portal-plans`;
+      let url;
+      if (role === 'organization') {
+        if (!token || !organizationId) {
+          throw new Error('No authorization token or organization ID found');
+        } else {
+          url = `${BaseUrl}/api/organization/plans`
+        }
+      }
+      else if (role === 'Admin' || role === 'assistant') {
+        const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans`;
+      }
 
-      // Fetch both plans concurrently
-      const [doctorPlansResponse, portalPlansResponse] = await Promise.all([
-        axios.get(doctorPlansUrl, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(portalPlansUrl, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
+      const response = await axios.get(
+        url,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            organizationId: organizationId
+          }
+        }
+      );
 
-      // Check if both responses are successful
-      if (doctorPlansResponse.data.status === 'success' && portalPlansResponse.data.status === 'success') {
-        const formattedPlans = [
-          ...doctorPlansResponse.data.body.map(plan => ({
-            id: plan._id,
-            name: plan.name,
-            price: plan.price,
-            details: plan.details,
-            validity: plan.validity,
-            status: plan.status,
-            createdBy: plan.createdBy,
-            planType: plan.planType
-          })),
-          ...portalPlansResponse.data.body.map(plan => ({
-            id: plan._id,
-            name: plan.name,
-            price: plan.price,
-            details: plan.details,
-            validity: plan.validity,
-            status: plan.status,
-            createdBy: plan.createdBy,
-            planType: plan.planType
-          }))
-        ];
+      if (response.data.status === 'success') {
+        const formattedPlans = response.data.body.map(plan => ({
+          id: plan._id,
+          name: plan.name,
+          price: plan.price,
+          details: plan.details,
+          validity: plan.validity,
+          status: plan.status,
+          createdBy: plan.createdBy,
+        }));
         setPlans(formattedPlans);
         toast.success('Plans fetched successfully');
       } else {
-        throw new Error('Failed to fetch plans from one or both endpoints');
+        throw new Error(response.data.message || 'Failed to fetch plans');
       }
     } catch (error) {
       console.error('Error fetching plans:', error);
@@ -562,7 +563,7 @@ const PlansManagement = () => {
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `${BaseUrl}/api/${baseUrl}/get-plan/${planId}`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans/${planId}`;
       }
 
       const response = await axios.get(
@@ -584,7 +585,6 @@ const PlansManagement = () => {
           validity: planDetails.validity,
           status: planDetails.status,
           createdBy: planDetails.createdBy,
-          planType: planDetails.planType || 'portal-plan',
         };
       } else {
         throw new Error(response.data.message || 'Failed to fetch plan details');
@@ -666,8 +666,6 @@ const PlansManagement = () => {
     try {
       const token = sessionStorage.getItem('token');
       const adminPortal = sessionStorage.getItem('adminPortal');
-      const role = sessionStorage.getItem('role');
-      const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
       if (!token) {
         throw new Error('No authorization token found');
@@ -678,8 +676,7 @@ const PlansManagement = () => {
         name: planData.name,
         price: parseFloat(planData.price),
         details: planData.details,
-        validity: parseInt(planData.validity),
-        planType: planData.planType
+        validity: parseInt(planData.validity)
       };
 
       console.log('Plan data to be sent:', formattedData);
@@ -687,7 +684,7 @@ const PlansManagement = () => {
       if (adminPortal === 'true') {
         const response = await axios({
           method: 'post',
-          url: `${BaseUrl}/api/${baseUrl}/create-plan`,
+          url: `${BaseUrl}/api/admin/create-plan`,
           data: formattedData,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -742,8 +739,6 @@ const PlansManagement = () => {
         setActionLoading(true);
         const token = sessionStorage.getItem('token');
         const adminPortal = sessionStorage.getItem('adminPortal');
-        const role = sessionStorage.getItem('role');
-        const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
         if (!token || adminPortal !== 'true') {
           throw new Error('Unauthorized to delete plans');
@@ -754,7 +749,7 @@ const PlansManagement = () => {
 
         const response = await axios({
           method: 'delete',
-          url: `${BaseUrl}/api/${baseUrl}/portal-plans/${planId}`,
+          url: `${BaseUrl}/api/admin/portal-plans/${planId}`,
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -797,23 +792,22 @@ const PlansManagement = () => {
         throw new Error('Unauthorized to create clinician plans');
       }
 
-      // Validate planType
-      const validPlanTypes = ['monthly', 'yearly', 'quarterly'];
-      if (!validPlanTypes.includes(planData.planType)) {
-        throw new Error('Invalid plan type. Must be one of: monthly, yearly, quarterly.');
-      }
+      // Log the incoming planData to verify the active status
+      console.log('Incoming planData:', planData);
 
       const formattedData = {
         name: planData.name,
         price: Number(planData.price),
         details: planData.details || 'No description provided',
         validity: Number(planData.validity),
-        active: Boolean(planData.active), // Explicitly convert to boolean
-        planType: planData.planType // Include planType in the request
+        active: Boolean(planData.active) // Explicitly convert to boolean
       };
 
+      // Log the formatted data before sending to API
+      console.log('Formatted data being sent:', formattedData);
+
       const response = await axios.post(
-        'https://rough-1-gcic.onrender.com/api/clinicistPlan',
+        `${BaseUrl}/api/clinicistPlan`,
         formattedData,
         {
           headers: {
@@ -823,23 +817,19 @@ const PlansManagement = () => {
         }
       );
 
+      // Log the API response
+      console.log('API Response:', response.data);
+
       if (response.data.status === 'success') {
+        // Ensure we're using the correct active status from the response
         const newPlan = {
-          id: response.data.body._id, // Use the ID from the response
-          name: response.data.body.name,
-          price: response.data.body.price,
-          details: response.data.body.details,
-          validity: response.data.body.validity,
-          active: response.data.body.active,
-          planType: response.data.body.planType,
-          createdAt: response.data.body.createdAt,
-          updatedAt: response.data.body.updatedAt,
+          ...response.data.body,
+          active: formattedData.active // Use the status we sent
         };
 
-        setClinicianPlans(prevPlans => [...prevPlans, newPlan]); // Update state with new plan
+        setClinicianPlans(prevPlans => [...prevPlans, newPlan]);
         toast.success('Clinician plan created successfully');
         handleCloseClinicianModal();
-        fetchClinicianPlans();
       } else {
         throw new Error(response.data.message || 'Failed to create clinician plan');
       }
@@ -853,12 +843,11 @@ const PlansManagement = () => {
 
   const handlePlanTypeChange = (event, newType) => {
     if (newType !== null) {
-      setPlanCategory(newType);
+      setPlanType(newType);
     }
   };
 
   const handleOpenAddModal = () => {
-    setPlanCategory('patient');
     setOpenAddModal(true);
   };
 
@@ -882,40 +871,28 @@ const PlansManagement = () => {
     try {
       const token = sessionStorage.getItem('token');
       const adminPortal = sessionStorage.getItem('adminPortal');
-      const role = sessionStorage.getItem('role');
-      const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
-      // Check if the user is authorized to create plans
       if (!token || adminPortal !== 'true') {
         throw new Error('Unauthorized to create plans');
       }
 
-      // Prepare the data to be sent to the API
       const formattedData = {
         name: planData.name,
         price: parseFloat(planData.price),
         details: planData.details,
-        validity: parseInt(planData.validity),
-        status: 'Active', // Default status
-        createdBy: sessionStorage.getItem('userId'), // Assuming you have a userId in session storage
-        planType: planData.planType, // Ensure this is either 'portal-plan' or 'doctor-plan'
+        validity: parseInt(planData.validity)
       };
 
-      console.log('Plan data to be sent:', formattedData); // Log the data being sent
-
-      // Make the API call to create the plan
-      const response = await axios.post(
-        `${BaseUrl}/api/${baseUrl}/create-plan`,
-        formattedData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
+      const response = await axios({
+        method: 'post',
+        url: `${BaseUrl}/api/admin/create-plan`,
+        data: formattedData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      );
+      });
 
-      // Check if the response contains the created plan
       if (response.data && response.data._id) {
         const newPlan = {
           id: response.data._id,
@@ -925,17 +902,12 @@ const PlansManagement = () => {
           validity: response.data.validity,
           status: response.data.status,
           createdBy: response.data.createdBy,
-          planType: response.data.planType,
-          createdAt: response.data.createdAt,
-          updatedAt: response.data.updatedAt,
+          planType: response.data.planType
         };
 
-        // Update the state with the new plan
         setPlans(prevPlans => [...prevPlans, newPlan]);
         toast.success('Plan created successfully');
         handleCloseAddModal();
-      } else {
-        throw new Error('Invalid response format from server');
       }
     } catch (error) {
       console.error('Error creating plan:', error);
@@ -950,8 +922,6 @@ const PlansManagement = () => {
     try {
       const token = sessionStorage.getItem('token');
       const adminPortal = sessionStorage.getItem('adminPortal');
-      const role = sessionStorage.getItem('role');
-      const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
       if (!token || adminPortal !== 'true') {
         throw new Error('Unauthorized to update plans');
@@ -962,13 +932,12 @@ const PlansManagement = () => {
         price: parseFloat(planData.price),
         details: planData.details,
         validity: parseInt(planData.validity),
-        status: planData.status,
-        planType: planData.planType
+        status: planData.status
       };
 
       const response = await axios({
         method: 'put',
-        url: `${BaseUrl}/api/${baseUrl}/update-plan/${planData.id}`,
+        url: `${BaseUrl}/api/admin/portal-plans/${planData.id}`,
         data: formattedData,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -976,7 +945,7 @@ const PlansManagement = () => {
         }
       });
 
-      if (response.status === 200) {
+      if (response.data.status === 'success') {
         setPlans(prevPlans =>
           prevPlans.map(plan =>
             plan.id === planData.id ? { ...plan, ...formattedData } : plan
@@ -984,13 +953,6 @@ const PlansManagement = () => {
         );
         toast.success('Plan updated successfully');
         handleCloseEditModal();
-        if (planCategory === 'patient') {
-          fetchPlans();
-        } else {
-          fetchClinicianPlans();
-        }
-      } else {
-        throw new Error(response.data.message || 'Failed to update plan');
       }
     } catch (error) {
       console.error('Error updating plan:', error);
@@ -1008,7 +970,7 @@ const PlansManagement = () => {
     setOpenClinicianModal(false);
   };
 
-  const fetchClinicianPlanDetails = async (plan) => {
+  const fetchClinicianPlanDetails = async (planId) => {
     try {
       const token = sessionStorage.getItem('token');
       const adminPortal = sessionStorage.getItem('adminPortal');
@@ -1018,7 +980,7 @@ const PlansManagement = () => {
       }
 
       const response = await axios.get(
-        `${BaseUrl}/api/clinicistPlan/${plan._id}`,
+        `${BaseUrl}/api/clinicistPlan/${planId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1039,7 +1001,7 @@ const PlansManagement = () => {
   };
 
   const handleOpenEditClinicianModal = async (plan) => {
-    const planDetails = await fetchClinicianPlanDetails(plan);
+    const planDetails = await fetchClinicianPlanDetails(plan._id);
     if (planDetails) {
       setSelectedClinicianPlan(planDetails);
       setOpenEditClinicianModal(true);
@@ -1066,8 +1028,7 @@ const PlansManagement = () => {
         price: Number(planData.price),
         details: planData.details,
         validity: Number(planData.validity),
-        active: Boolean(planData.active),
-        planType: planData.planType
+        active: Boolean(planData.active)
       };
 
       const response = await axios.put(
@@ -1116,8 +1077,6 @@ const PlansManagement = () => {
         setActionLoading(true);
         const token = sessionStorage.getItem('token');
         const adminPortal = sessionStorage.getItem('adminPortal');
-        const role = sessionStorage.getItem('role');
-        const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
 
         if (!token || adminPortal !== 'true') {
           throw new Error('Unauthorized to delete clinician plan');
@@ -1162,7 +1121,6 @@ const PlansManagement = () => {
       price: '',
       details: '',
       validity: '',
-      planType: 'monthly',
       active: true
     });
 
@@ -1174,8 +1132,7 @@ const PlansManagement = () => {
           price: plan.price,
           details: plan.details,
           validity: plan.validity,
-          active: plan.active,
-          planType: plan.planType
+          active: plan.active
         });
       }
     }, [plan]);
@@ -1224,7 +1181,7 @@ const PlansManagement = () => {
             <StyledTextField
               fullWidth
               label="Plan Name"
-              name="name"
+              name="planName"
               value={formData.name}
               onChange={handleChange}
               margin="normal"
@@ -1234,17 +1191,16 @@ const PlansManagement = () => {
               fullWidth
               label="Price"
               name="price"
-              type="text"
+              type="number"
               value={formData.price}
               onChange={handleChange}
               margin="normal"
               required
-              inputProps={{ pattern: "[0-9]*([.,][0-9]+)?" }}
             />
             <StyledTextField
               fullWidth
               label="Description"
-              name="details"
+              name="description"
               value={formData.details}
               onChange={handleChange}
               margin="normal"
@@ -1255,31 +1211,12 @@ const PlansManagement = () => {
               fullWidth
               label="Validity (days)"
               name="validity"
-              type="text"
+              type="number"
               value={formData.validity}
               onChange={handleChange}
               margin="normal"
               required
-              inputProps={{ pattern: "[0-9]*([.,][0-9]+)?" }}
             />
-
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="plan-type-label">Plan Type</InputLabel>
-              <Select
-                labelId="plan-type-label"
-                id="plan-type"
-                name="planType"
-                value={formData.planType}
-                onChange={handleChange}
-                required
-              >
-                <MenuItem value="monthly">Monthly</MenuItem>
-                <MenuItem value="yearly">Yearly</MenuItem>
-                <MenuItem value="quarterly">Quarterly</MenuItem>
-              </Select>
-            </FormControl>
-
-
             <FormControl
               fullWidth
               margin="normal"
@@ -1451,7 +1388,7 @@ const PlansManagement = () => {
       }}>
 
         <StyledToggleButtonGroup
-          value={planCategory}
+          value={planType}
           exclusive
           onChange={handlePlanTypeChange}
           aria-label="plan type"
@@ -1470,7 +1407,7 @@ const PlansManagement = () => {
       </Box>
 
       <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
-        {planCategory === 'patient' ? (
+        {planType === 'patient' ? (
           <Box mb={4}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
               <Button
@@ -1542,19 +1479,6 @@ const PlansManagement = () => {
                         <Typography className="plan-price">
                           ${plan.price}
                           <span className="price-period">/{plan.validity} days</span>
-                        </Typography>
-                        <Typography className="plan-type mt-2" 
-                        sx={{
-                          color: '#475569',
-                          fontSize: '0.875rem',
-                          lineHeight: 1.5,
-                          marginBottom: '1rem',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }} >
-                          Plan Type: {plan.planType.charAt(0).toUpperCase() + plan.planType.slice(1)}
                         </Typography>
                       </CardHeader>
 
@@ -1821,7 +1745,7 @@ const PlanForm = ({ plan, onSave, onCancel, isAdmin, isAdminPortal }) => {
         endDate: plan.endDate ? new Date(plan.endDate).toISOString().split('T')[0] : '',
         validity: plan.validity,
         status: plan.status || 'Active',
-        planType: plan.planType || 'portal-plan',
+        planType: plan.planType || 'portal-plan'
       };
     }
 
@@ -1832,15 +1756,30 @@ const PlanForm = ({ plan, onSave, onCancel, isAdmin, isAdminPortal }) => {
       endDate: '',
       validity: '',
       status: 'Active',
-      planType: 'portal-plan',
+      planType: 'portal-plan'
     };
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData(prevData => {
+      const newData = { ...prevData, [name]: value };
+
+      if (name === 'validity' && value) {
+        newData.endDate = calculateEndDate(newData.startDate, value);
+      }
+      else if (name === 'startDate' && newData.validity) {
+        newData.endDate = calculateEndDate(value, newData.validity);
+      }
+
+      return newData;
+    });
+  };
+
+  const handleStatusChange = (e) => {
     setFormData(prevData => ({
       ...prevData,
-      [name]: value,
+      status: e.target.checked ? 'Active' : 'Inactive'
     }));
   };
 
@@ -1864,13 +1803,11 @@ const PlanForm = ({ plan, onSave, onCancel, isAdmin, isAdminPortal }) => {
         fullWidth
         label="Price (in USD)"
         name="price"
-        type="text"
+        type="number"
         value={formData.price}
         onChange={handleChange}
         margin="normal"
         required
-        inputProps={{ pattern: "[0-9]*([.,][0-9]+)?" }}
-
       />
       <StyledTextField
         fullWidth
@@ -1881,6 +1818,7 @@ const PlanForm = ({ plan, onSave, onCancel, isAdmin, isAdminPortal }) => {
         margin="normal"
         multiline
         rows={3}
+        required
       />
       <StyledTextField
         fullWidth
@@ -1893,25 +1831,11 @@ const PlanForm = ({ plan, onSave, onCancel, isAdmin, isAdminPortal }) => {
         required
       />
       <FormControl fullWidth margin="normal">
-        <InputLabel id="plan-type-label">Plan Type</InputLabel>
-        <Select
-          labelId="plan-type-label"
-          id="plan-type"
-          name="planType"
-          value={formData.planType}
-          onChange={handleChange}
-          required
-        >
-          <MenuItem value="portal-plan">Portal Plan</MenuItem>
-          <MenuItem value="doctor-plan">Doctor Plan</MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl fullWidth margin="normal">
         <FormControlLabel
           control={
             <Switch
               checked={formData.status === 'Active'}
-              onChange={(e) => handleChange({ target: { name: 'status', value: e.target.checked ? 'Active' : 'Inactive' } })}
+              onChange={handleStatusChange}
               name="status"
               color="primary"
             />
@@ -1919,7 +1843,62 @@ const PlanForm = ({ plan, onSave, onCancel, isAdmin, isAdminPortal }) => {
           label={formData.status}
         />
       </FormControl>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+
+      {isAdmin && isAdminPortal && (
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="plan-type-label">Plan Type</InputLabel>
+          <Select
+            labelId="plan-type-label"
+            id="plan-type"
+            name="planType"
+            value={formData.planType}
+            onChange={handleChange}
+            required
+          >
+            <MenuItem value="portal-plan">Portal Plan</MenuItem>
+            <MenuItem value="doctor-plan">Doctor Plan</MenuItem>
+          </Select>
+        </FormControl>
+      )}
+
+      {formData.planType === 'doctor-plan' && (
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <StyledTextField
+              fullWidth
+              label="Start Date"
+              name="startDate"
+              type="date"
+              value={formData.startDate}
+              onChange={handleChange}
+              margin="normal"
+              InputLabelProps={{ shrink: true }}
+              required
+              disabled
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <StyledTextField
+              fullWidth
+              label="End Date"
+              name="endDate"
+              type="date"
+              value={formData.endDate}
+              margin="normal"
+              InputLabelProps={{ shrink: true }}
+              required
+              disabled
+            />
+          </Grid>
+        </Grid>
+      )}
+
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: 2,
+        mt: 4
+      }}>
         <Button
           onClick={onCancel}
           sx={{
@@ -2059,9 +2038,6 @@ const ClinicianPlanCard = ({ plan, onEdit, onDelete, getTimeAgo, formatDate }) =
               /{plan.validity} days
             </span>
           </Typography>
-          <Typography sx={{ fontSize: '0.875rem', color: '#64748b' }}>
-            Plan Type: {plan.planType.charAt(0).toUpperCase() + plan.planType.slice(1)}
-          </Typography>
         </Box>
 
         {/* Plan Details */}
@@ -2130,21 +2106,66 @@ const ClinicianPlanForm = ({ onSave, onCancel }) => {
     price: '',
     details: '',
     validity: '',
-    active: true,
-    planType: 'monthly' // Default value for planType
+    active: true
   });
+
+  const calculateEndDate = (startDate, validityDays) => {
+    if (!startDate || !validityDays) return '';
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + parseInt(validityDays));
+    return date.toISOString().split('T')[0];
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData(prevData => {
+      const newData = { ...prevData, [name]: value };
+
+      // Automatically calculate end date when start date or validity changes
+      if ((name === 'validity' && newData.startDate) ||
+        (name === 'startDate' && newData.validity)) {
+        newData.endDate = calculateEndDate(
+          newData.startDate || prevData.startDate,
+          newData.validity || prevData.validity
+        );
+      }
+
+      return newData;
+    });
+  };
+
+  // Add handler for toggle switch
+  const handleActiveToggle = (e) => {
+    const newActiveStatus = e.target.checked;
+    console.log('Toggle switched to:', newActiveStatus); // Debug log
     setFormData(prevData => ({
       ...prevData,
-      [name]: value
+      active: newActiveStatus
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Log the form data before submission
+    console.log('Form data being submitted:', formData);
+
+    // Validate required fields
+    if (!formData.name || !formData.price || !formData.validity) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate numeric fields
+    if (isNaN(Number(formData.price)) || isNaN(Number(formData.validity))) {
+      toast.error('Price and validity must be valid numbers');
+      return;
+    }
+
+    onSave({
+      ...formData,
+      active: Boolean(formData.active) // Ensure it's a boolean
+    });
   };
 
   return (
@@ -2188,27 +2209,78 @@ const ClinicianPlanForm = ({ onSave, onCancel }) => {
         margin="normal"
         required
       />
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="plan-type-label">Plan Type</InputLabel>
-        <Select
-          labelId="plan-type-label"
-          id="plan-type"
-          name="planType"
-          value={formData.planType}
-          onChange={handleChange}
-          required
+
+      {/* Added Status Toggle Switch */}
+      <FormControl
+        fullWidth
+        margin="normal"
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 14px',
+          backgroundColor: 'rgba(59, 130, 246, 0.04)',
+          borderRadius: '12px',
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: formData.active ? '#10b981' : '#ef4444',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            '&::before': {
+              content: '""',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: formData.active ? '#10b981' : '#ef4444',
+            }
+          }}
         >
-          <MenuItem value="monthly">Monthly</MenuItem>
-          <MenuItem value="yearly">Yearly</MenuItem>
-          <MenuItem value="quarterly">Quarterly</MenuItem>
-        </Select>
+          {formData.active ? 'Active' : 'Inactive'}
+        </Typography>
+        <StatusSwitch
+          checked={formData.active}
+          onChange={handleActiveToggle}
+          inputProps={{ 'aria-label': 'plan status' }}
+        />
       </FormControl>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
-        <Button onClick={onCancel} sx={{ borderRadius: '12px', textTransform: 'none', padding: '10px 28px', color: '#64748b', border: '2px solid #e2e8f0', fontWeight: 600 }}>
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: 2,
+        mt: 4
+      }}>
+        <Button
+          onClick={onCancel}
+          sx={{
+            borderRadius: '12px',
+            textTransform: 'none',
+            padding: '10px 28px',
+            color: '#64748b',
+            border: '2px solid #e2e8f0',
+            fontWeight: 600,
+          }}
+        >
           Cancel
         </Button>
-        <Button type="submit" variant="contained" sx={{ borderRadius: '12px', textTransform: 'none', padding: '10px 28px', background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', fontWeight: 600 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{
+            borderRadius: '12px',
+            textTransform: 'none',
+            padding: '10px 28px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            fontWeight: 600,
+          }}
+        >
           Create Clinician Plan
         </Button>
       </Box>

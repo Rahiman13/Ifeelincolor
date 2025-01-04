@@ -652,32 +652,53 @@ const BudgetAnalysis = () => {
       const token = sessionStorage.getItem('token');
       const isAdminPortal = sessionStorage.getItem('adminPortal') === 'true';
       const baseUrl = getApiBaseUrl();
-      let url;
 
-      if (isAdminPortal) {
-        if (filter === 'clinician') {
-          url = `${BaseUrl}/api/doctorSub/getAll`;
-        } else if (filter === 'organization') {
-          url = `${BaseUrl}/api/orgSubscription/getAll`;
-        } else {
-          url = `${BaseUrl}/api/${baseUrl}/subscriptions`;
-        }
+      if (filter === 'patient' && isAdminPortal) {
+        const [doctorPlanResponse, portalPlanResponse] = await Promise.all([
+          axios.get(`${BaseUrl}/api/admin/doctor-plan-subscriptions`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${BaseUrl}/api/admin/subscriptions`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        ]);
+
+        const doctorPlanSubs = (doctorPlanResponse.data.body || []).map(sub => ({
+          ...sub,
+          subscriptionType: 'doctor-plan'
+        }));
+
+        const portalPlanSubs = (portalPlanResponse.data.body || []).map(sub => ({
+          ...sub,
+          subscriptionType: 'portal-plan'
+        }));
+
+        const combinedSubscriptions = [...doctorPlanSubs, ...portalPlanSubs]
+          .sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+        setSubscriptions(combinedSubscriptions);
       } else {
-        // Use existing URLs for non-admin users
-        const role = sessionStorage.getItem('role');
-        if (role === 'manager') {
-          url = `${BaseUrl}/api/manager/subscriptions`;
+        let url;
+        if (isAdminPortal) {
+          if (filter === 'clinician') {
+            url = `${BaseUrl}/api/doctorSub/getAll`;
+          } else if (filter === 'organization') {
+            url = `${BaseUrl}/api/orgSubscription/getAll`;
+          } else {
+            url = `${BaseUrl}/api/${baseUrl}/subscriptions`;
+          }
         } else {
-          url = `${BaseUrl}/api/organization/subscriptions`;
+          const role = sessionStorage.getItem('role');
+          url = role === 'manager' 
+            ? `${BaseUrl}/api/manager/subscriptions`
+            : `${BaseUrl}/api/organization/subscriptions`;
         }
-      }
 
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setSubscriptions(filter === 'organization' ? response.data.data : response.data.body);
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSubscriptions(filter === 'organization' ? response.data.data : response.data.body);
+      }
     } catch (error) {
       console.error('Error fetching subscriptions:', error);
       toast.error('Failed to fetch subscriptions');
@@ -825,6 +846,16 @@ const BudgetAnalysis = () => {
   };
 
   const renderTableHeaders = () => {
+    if (filter === 'patient') {
+      return [
+        { id: 'sno', label: 'S.No', align: 'center' },
+        { id: 'patient_info', label: 'Patient Info', align: 'left' }, // Merged column
+        { id: 'subscription_status', label: 'Subscription Details & Status', align: 'center' }, // Merged column
+        { id: 'doctor', label: 'Doctor', align: 'center' },
+        { id: 'guardian', label: 'Guardian', align: 'center' },
+        { id: 'location', label: 'Location', align: 'center' },
+      ];
+    }
     if (filter === 'clinician') {
       return [
         { id: 'sno', label: 'S.No', align: 'center' },
@@ -880,6 +911,187 @@ const BudgetAnalysis = () => {
   };
 
   const renderTableCell = (subscription, header) => {
+    if (filter === 'patient') {
+      switch (header.id) {
+        case 'sno':
+          return page * rowsPerPage + subscriptions.indexOf(subscription) + 1;
+        case 'patient_info':
+          return (
+            <UserInfoCell>
+              <StyledAvatar src={subscription.patient?.image} />
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {subscription.patient?.userName || '-'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {subscription.patient?.email || '-'}
+                </Typography>
+              </Box>
+            </UserInfoCell>
+          );
+        case 'subscription_status':
+          return (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              gap: '8px',
+              background: 'rgba(0, 0, 0, 0.02)',
+              padding: '12px',
+              borderRadius: '8px',
+              minWidth: '250px'
+            }}>
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Plan:
+                </Typography>
+                <Chip
+                  label={`${subscription.plan?.name || 'N/A'} (${subscription.subscriptionType === 'doctor-plan' ? 'Doctor Plan' : 'Portal Plan'})`}
+                  size="small"
+                  sx={{
+                    background: subscription.subscriptionType === 'doctor-plan' 
+                      ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+                      : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    fontWeight: 500,
+                    fontSize: '0.75rem'
+                  }}
+                />
+              </Box>
+              
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Price:
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.success.main,
+                    background: alpha(theme.palette.success.main, 0.1),
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                  }}
+                >
+                  ${subscription.plan?.price?.toFixed(2) || 'N/A'}
+                </Typography>
+              </Box>
+
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <Typography variant="caption" sx={{ 
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <FaCalendarPlus size={10} />
+                    Valid From:
+                  </Typography>
+                  <Typography variant="body2">
+                    {format(new Date(subscription.startDate), 'MMM dd, yyyy')}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <Typography variant="caption" sx={{ 
+                    color: 'text.secondary',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <FaCalendarMinus size={10} />
+                    Valid Till:
+                  </Typography>
+                  <Typography variant="body2">
+                    {format(new Date(subscription.endDate), 'MMM dd, yyyy')}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Status:
+                </Typography>
+                <StatusChip
+                  label={new Date() < new Date(subscription.endDate) ? 'Active' : 'Expired'}
+                  status={new Date() < new Date(subscription.endDate) ? 'Active' : 'Expired'}
+                />
+              </Box>
+            </Box>
+          );
+        case 'doctor':
+          return subscription.clinisist ? (
+            <UserInfoCell>
+              <StyledAvatar src={subscription.clinisist?.image} />
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {subscription.clinisist?.name || 'N/A'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {subscription.clinisist?.specializedIn || 'N/A'}
+                </Typography>
+              </Box>
+            </UserInfoCell>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              Not Applicable
+            </Typography>
+          );
+        case 'guardian':
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {subscription.patient?.guardian || '-'}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {subscription.patient?.mobile || '-'}
+              </Typography>
+            </Box>
+          );
+        case 'location':
+          return subscription.patient?.location ? (
+            <Tooltip title={subscription.patient.location}>
+              <Typography
+                variant="body2"
+                sx={{
+                  maxWidth: '200px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
+                {subscription.patient.location}
+              </Typography>
+            </Tooltip>
+          ) : '-';
+        default:
+          return '-';
+      }
+    }
     if (filter === 'clinician') {
       switch (header.id) {
         case 'sno':

@@ -760,8 +760,8 @@ export default function OrganizationSubscription() {
                       <Box
                         sx={{
                           position: 'absolute',
-                          bottom: '-10px',
-                          left: '350px',
+                          bottom: '-16px',
+                          right: '0',
                           color: 'rgba(255, 255, 255, 0.6)',
                           fontSize: '0.75rem',
                           fontStyle: 'italic',
@@ -843,36 +843,43 @@ export default function OrganizationSubscription() {
                             </Box>
                           </StyledTableCell>
                           <StyledTableCell>
-                            <Tooltip title={`Subscribed: ${new Date(sub.startDate).toLocaleDateString()}\nEnds: ${new Date(sub.endDate).toLocaleDateString()}`} arrow>
-                              <Box>
+                            <Box>
+                              <Tooltip title={`Subscribed: ${new Date(sub.startDate).toLocaleDateString()}\nEnds: ${new Date(sub.endDate).toLocaleDateString()}`} arrow>
+                                <Box>
+                                  <IconWrapper sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 1
+                                  }}>
+                                    <FaCalendarAlt />
+                                    <Typography variant="body2">{sub.validity} days</Typography>
+                                  </IconWrapper>
+                                </Box>
+                              </Tooltip>
+                              <Box mt={1}>
                                 <IconWrapper sx={{
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   gap: 1
                                 }}>
-                                  <FaCalendarAlt />
-                                  <Typography variant="body2">{sub.validity} days</Typography>
+                                  <FaDollarSign />
+                                  <Typography variant="body2">{sub.price}</Typography>
                                 </IconWrapper>
                               </Box>
-                            </Tooltip>
-                            <Box mt={1}>
-                              <IconWrapper sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 1
-                              }}>
-                                <FaDollarSign />
-                                <Typography variant="body2">{sub.price}</Typography>
-                              </IconWrapper>
+                              <Box mt={1}>
+                                {new Date(sub.startDate) <= new Date() && new Date(sub.endDate) >= new Date() && (
+                                  <Chip label="Active" color="primary" />
+                                )}
+                                {new Date(sub.endDate) < new Date() && (
+                                  <Chip label="Ended" color="warning" />
+                                )}
+                                {sub.renewal && (
+                                  <Chip label="Renewal" color="primary" />
+                                )}
+                              </Box>
                             </Box>
-                            <PulseChip
-                              label={sub.renewal ? 'Renewal' : 'New'}
-                              color={sub.renewal ? 'primary' : 'secondary'}
-                              size="small"
-                              style={{ marginTop: '8px' }}
-                            />
                           </StyledTableCell>
                           <StyledTableCell>
                             <Tooltip title={`${sub.clinicians} clinicians`} arrow>

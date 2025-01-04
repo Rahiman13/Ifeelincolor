@@ -20,7 +20,7 @@ import BaseUrl from '../../api';
 
 
 const calculatePercentageIncrease = (current, previous) => {
-  if (!current || !previous) return '0% of total';
+  if (current === undefined || previous === undefined) return '0% of total';
   if (previous === 0) return current > 0 ? '100% of total' : '0% of total';
 
   const increase = ((current - previous) / Math.abs(previous)) * 100;
@@ -312,8 +312,6 @@ const ManagersPage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Assuming the API returns both current and previous counts
-      // If not, you'll need to modify your backend to include this data
       setManagerCounts({
         total: response.data.body.total,
         active: response.data.body.active,

@@ -88,3 +88,31 @@
     }
   }
   
+  .custom-modal .modal-content {
+    background: linear-gradient(135deg, #f0f4f8, #d9e4f5);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .custom-modal .modal-header {
+    border-bottom: none;
+  }
+  
+  .custom-modal .modal-title {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .custom-modal .announcement-item {
+    margin-bottom: 20px;
+  }
+  
+  .custom-modal .announcement-item h5 {
+    color: #007bff;
+    font-weight: 600;
+  }
+  
+  .custom-modal .announcement-item p {
+    color: #555;
+  }
+  
