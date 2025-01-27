@@ -23,6 +23,8 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Snackbar from '@mui/material/Snackbar';
 import { useLocation } from 'react-router-dom';
+import BaseUrl from '../../api';
+
 
 // Load Stripe with your publishable key
 const stripePromise = loadStripe("pk_test_51QQ5mPEO0XTlFhbUdSBmDZ0dfl2fiMQVnCbB8mHQE8TTKxakT4ejqO2UDUGEbZe5zr6JSl9irEmIYpmYhc0vD3SV00dQ2x41fY");
@@ -231,7 +233,7 @@ const PaymentForm = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post("https://rough-1-gcic.onrender.com/api/payment/create-payment-intent", {
+      const response = await axios.post(`${BaseUrl}/api/payment/create-payment-intent`, {
         amount: parseFloat(paymentDetails.amount),
         email: paymentDetails.email,
         orderId: paymentDetails.orderId,
@@ -255,7 +257,7 @@ const PaymentForm = () => {
       } else {
         try {
           const subscriptionResponse = await axios.post(
-            "https://rough-1-gcic.onrender.com/api/orgSubscription/create",
+            `${BaseUrl}/api/orgSubscription/create`,
             {
               organizationId: paymentDetails.orderId,
               clinicians: paymentDetails.clinicians,
