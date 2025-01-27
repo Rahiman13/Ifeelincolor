@@ -13,7 +13,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: '/',
+  base: '/Ifeelincolor_panel/',
   plugins: [react()],
   resolve: {
     alias: {
