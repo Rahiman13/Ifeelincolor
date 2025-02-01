@@ -102,7 +102,7 @@ const MetricCard = ({ title, value, icon, gradient, percentage }) => (
         <Icon path={icon} size={1.5} color="rgba(255,255,255,0.8)" />
       </div>
       <div>
-        <h2 className="mb-1" style={{ fontSize: '1.8rem', fontWeight: 600 }}>${value.toFixed(2)}</h2>
+        <h2 className="mb-1" style={{ fontSize: '1.8rem', fontWeight: 600 }}>{value}</h2>
         <p className="mb-0" style={{
           fontSize: '0.8rem',
           opacity: 0.8,
