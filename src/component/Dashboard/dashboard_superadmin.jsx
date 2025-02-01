@@ -835,7 +835,7 @@ class Dashboard extends Component {
                 });
                 const data = await response.json();
                 if (data.status === 'success') {
-                    const totalEarnings = data.body.total.earnings;
+                    const totalEarnings = data.body.currentYear.earnings;
                     const currentEarnings = data.body.currentMonth.earnings; // Get current month earnings
                     const previousEarnings = data.body.currentYear.earnings; // Get current year earnings for percentage calculation
 
@@ -1566,7 +1566,7 @@ class Dashboard extends Component {
                                     icon={mdiCashMultiple}
                                     gradient="linear-gradient(135deg, #d35400 0%, #d35400 100%)"
                                     // percentage={`↑ ${this.state.earningsPercentageIncrease}`}
-                                    description="Current Month Earnings"
+                                    description="Current Year Earnings"
                                     onClick={() => this.props.navigate('/subscription-budget-analysis/overview_superadmin')}
                                 />
                             </Box>
