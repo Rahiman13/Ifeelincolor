@@ -1,0 +1,17 @@
+Ifeelincolor Web panel Creds for all roles
+
+Admin
+email: test@gmail.com
+password: 123
+
+Assistant
+email: naeema@gmail.com
+password: 123
+
+Org Admin
+email: org@gmail.com
+password: 123
+
+Manager
+email: test@gmail.com
+password: 123
