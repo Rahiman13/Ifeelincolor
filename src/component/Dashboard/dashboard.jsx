@@ -380,33 +380,7 @@ class Dashboard extends Component {
                 { id: 4, name: 'Jamie', issue: 'Depression', subscriptionType: 'Clinician', startDate: '2023-03-15', endDate: '2024-03-15', assignedDoctor: 'Dr. Brown', status: 'At Risk' },
                 { id: 5, name: 'Sersi', issue: 'Paranoia', subscriptionType: 'Portal', startDate: '2023-06-20', endDate: '2024-06-20', assignedDoctor: 'Dr. Taylor', status: 'Critical' },
             ],
-            // Dummy data for admins and managers
-            // admins: [
-            //     {
-            //         organization: "Tech Innovators",
-            //         name: "John Doe",
-            //         email: "john.doe@techinnovators.com",
-            //         avatar: "https://randomuser.me/api/portraits/men/1.jpg" // Sample avatar URL
-            //     },
-            //     {
-            //         organization: "Creative Solutions",
-            //         name: "Jane Smith",
-            //         email: "jane.smith@creativesolutions.com",
-            //         avatar: "https://randomuser.me/api/portraits/women/2.jpg"
-            //     },
-            //     {
-            //         organization: "Health Corp",
-            //         name: "Robert Johnson",
-            //         email: "robert.johnson@healthcorp.com",
-            //         avatar: "https://randomuser.me/api/portraits/men/3.jpg"
-            //     },
-            //     {
-            //         organization: "Health Corp",
-            //         name: " Johnson",
-            //         email: "johnson@healthcorp.com",
-            //         avatar: "https://randomuser.me/api/portraits/men/4.jpg"
-            //     }
-            // ],
+            
             managers: [],
             isLoading: true,
             error: null,

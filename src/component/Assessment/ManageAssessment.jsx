@@ -8,6 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button as MuiButton, MenuItem, Typography, Checkbox, FormControlLabel } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import BaseUrl from '../../api';
 
 const dummyImage = 'path/to/dummy/image.png'; // Path to your dummy image
 
@@ -64,7 +65,8 @@ export default function TestsPage() {
 
       if (role === 'Admin' && token) {
         try {
-          const response = await axios.get('https://rough-1-gcic.onrender.com/api/test', {
+          // const response = await axios.get('https://rough-1-gcic.onrender.com/api/test', {
+          const response = await axios.get(`${BaseUrl}/api/test`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (response.data.status === 'success') {
@@ -100,7 +102,7 @@ export default function TestsPage() {
 
     if (role === 'Admin' && token) {
       try {
-        const response = await axios.get(`https://rough-1-gcic.onrender.com/api/test/${testId}`, {
+        const response = await axios.get(`${BaseUrl}/api/test/${testId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -121,7 +123,7 @@ export default function TestsPage() {
 
     if (role === 'Admin' && token) {
       try {
-        const response = await axios.get(`https://rough-1-gcic.onrender.com/api/test/${testId}`, {
+        const response = await axios.get(`${BaseUrl}/api/test/${testId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -154,7 +156,7 @@ export default function TestsPage() {
 
     if (role === 'Admin' && token) {
       try {
-        const response = await axios.post('https://rough-1-gcic.onrender.com/api/test/create', formData, {
+        const response = await axios.post(`${BaseUrl}/api/test/create`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -175,7 +177,7 @@ export default function TestsPage() {
 
     if (role === 'Admin' && token) {
       try {
-        const response = await axios.put(`https://rough-1-gcic.onrender.com/api/test/${formData._id}`, formData, {
+        const response = await axios.put(`${BaseUrl}/api/test/${formData._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.data.status === 'success') {
@@ -206,7 +208,7 @@ export default function TestsPage() {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const response = await axios.delete(`https://rough-1-gcic.onrender.com/api/test/${testId}`, {
+            const response = await axios.delete(`${BaseUrl}/api/test/${testId}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.status === 'success') {

@@ -19,6 +19,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Container, Row, Col } from 'react-bootstrap';
 import { mdiAlertCircleOutline, mdiMagnify, mdiCalendar, mdiNumeric, mdiMedicalBag, mdiClock, mdiMapMarker, mdiCheckboxMarkedCircleOutline, mdiCloseCircleOutline } from '@mdi/js';
 import { FaUserMd, FaGraduationCap, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
+import { UserX } from 'lucide-react';
 // import { Grid, Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from '@mui/material';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
@@ -1926,7 +1927,8 @@ const ClinicianPage = () => {
                                 color="view"
                                 onClick={() => fetchClinicianDetails(clinician._id)} // Fetch details on click
                             >
-                                <Icon path={mdiCloseCircleOutline} size={1} color="grey" />
+                                {/* <Icon path={mdiCloseCircleOutline} size={1} color="grey" /> */}
+                                <UserX size={20} strokeWidth={2} />
 
                             </ActionButton>
                         </span>

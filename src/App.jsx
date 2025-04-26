@@ -6,6 +6,8 @@ import SidebarOrganization from './component/Shared/Sidebar_Organization';
 import Footer from './component/Shared/Footer';
 import Navbar from './component/Shared/Navbar';
 import Navbar_superadmin from './component/Shared/Navbar_superadmin';
+import styled from '@emotion/styled';
+
 
 const App = () => {
   const [isFullPageLayout, setIsFullPageLayout] = useState(false);

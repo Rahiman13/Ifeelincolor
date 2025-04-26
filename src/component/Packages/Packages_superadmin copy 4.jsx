@@ -676,7 +676,8 @@ const PlansManagement = () => {
       // Format the data according to API requirements
       const formattedData = {
         name: planData.name,
-        price: parseFloat(planData.price),
+        // price: parseFloat(planData.price),
+        price: parseFloat(parseFloat(planData.price).toFixed(2)),
         details: planData.details,
         validity: parseInt(planData.validity),
         planType: planData.planType
@@ -805,7 +806,8 @@ const PlansManagement = () => {
 
       const formattedData = {
         name: planData.name,
-        price: Number(planData.price),
+        // price: Number(planData.price),
+        price: parseFloat(parseFloat(planData.price).toFixed(2)),
         details: planData.details || 'No description provided',
         validity: Number(planData.validity),
         active: Boolean(planData.active), // Explicitly convert to boolean
@@ -893,7 +895,8 @@ const PlansManagement = () => {
       // Prepare the data to be sent to the API
       const formattedData = {
         name: planData.name,
-        price: parseFloat(planData.price),
+        // price: parseFloat(planData.price),
+        price: parseFloat(parseFloat(planData.price).toFixed(2)),
         details: planData.details,
         validity: parseInt(planData.validity),
         status: 'Active', // Default status
@@ -959,7 +962,8 @@ const PlansManagement = () => {
 
       const formattedData = {
         name: planData.name,
-        price: parseFloat(planData.price),
+        // price: parseFloat(planData.price),
+        price: parseFloat(parseFloat(planData.price).toFixed(2)),
         details: planData.details,
         validity: parseInt(planData.validity),
         status: planData.status,
@@ -1063,7 +1067,8 @@ const PlansManagement = () => {
 
       const formattedData = {
         name: planData.name,
-        price: Number(planData.price),
+        // price: Number(planData.price),
+        price: parseFloat(parseFloat(planData.price).toFixed(2)),
         details: planData.details,
         validity: Number(planData.validity),
         active: Boolean(planData.active),

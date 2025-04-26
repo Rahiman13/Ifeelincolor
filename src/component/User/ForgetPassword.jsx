@@ -11,6 +11,7 @@ import Card from 'react-bootstrap/Card';
 import { FaLock } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import BaseUrl from '../../api';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -24,16 +25,16 @@ const ForgotPassword = () => {
 
     const apiEndpoints = {
         organization: {
-            forgotPassword: 'http://localhost:3000/api/organization/forgot-password',
-            resetPassword: 'http://localhost:3000/api/organization/reset-password',
+            forgotPassword: `${BaseUrl}/api/organization/forgot-password`,
+            resetPassword: `${BaseUrl}/api/organization/reset-password`,
         },
         orgadmin: {
-            forgotPassword: 'http://localhost:3000/api/orgadmin/forgot-password',
-            resetPassword: 'http://localhost:3000/api/orgadmin/reset-password',
+            forgotPassword: `${BaseUrl}/api/orgadmin/forgot-password`,
+            resetPassword: `${BaseUrl}/api/orgadmin/reset-password`,
         },
         manager: {
-            forgotPassword: 'http://localhost:3000/api/manager/forgot-password',
-            resetPassword: 'http://localhost:3000/api/manager/reset-password',
+            forgotPassword: `${BaseUrl}/api/manager/forgot-password`,
+            resetPassword: `${BaseUrl}/api/manager/reset-password`,
         },
     };
 
