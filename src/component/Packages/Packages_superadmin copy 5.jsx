@@ -634,7 +634,7 @@ const PlansManagement = () => {
       }
       else if (role === 'Admin' || role === 'assistant') {
         const baseUrl = role === 'assistant' ? 'assistant' : 'admin';
-        url = `${BaseUrl}/api/${baseUrl}/update-plan/${planId}`;
+        url = `${BaseUrl}/api/${baseUrl}/portal-plans/${planId}`;
       }
 
       const response = await axios.put(
@@ -647,25 +647,16 @@ const PlansManagement = () => {
         }
       );
 
-      // console.log(response.data.status)
-      // console.log(response.data)
-      if (response.data.status === 'Active') {
+      if (response.data.status === 'success') {
         setPlans(plans.map(plan =>
           plan.id === planId ? { ...plan, status: newStatus ? 'Active' : 'Inactive' } : plan
         ));
         toast.success(`Plan status updated successfully`);
-      } else if (response.data.status === 'Inactive') {
-        setPlans(plans.map(plan =>
-          plan.id === planId ? { ...plan, status: newStatus ? 'Active' : 'Inactive' } : plan
-        ));
-        toast.success(`Plan status updated successfully`);
-      }
-       else {
-        // console.log(response.data)
-        // console.log(response.data.message)
+      } else {
         throw new Error(response.data.message || 'Failed to update plan status');
       }
     } catch (error) {
+      console.error('Error updating plan status:', error);
       toast.error('Failed to update plan status');
     }
   };

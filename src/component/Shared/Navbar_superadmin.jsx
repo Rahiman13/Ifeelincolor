@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import Logo from '../../assets/logo.svg';
+import Logo from '../../assets/logo.png';
 import Face1 from '../../assets/face1.jpg';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
