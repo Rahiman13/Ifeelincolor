@@ -258,7 +258,7 @@ const MetricCard = ({ title, value, icon, gradient, percentage }) => (
         <Icon path={icon} size={1.8} color="rgba(255,255,255,0.8)" />
 
       </div>
-      <h2 className="mb-0">${value.toFixed(2)}</h2>
+      <h2 className="mb-0">${!isNaN(Number(value)) ? Number(value).toFixed(2) : 'N/A'}</h2>
       <p className="mb-0">{percentage}</p>
     </Card.Body>
   </Card>
@@ -689,7 +689,7 @@ const BudgetAnalysis = () => {
           }
         } else {
           const role = sessionStorage.getItem('role');
-          url = role === 'manager' 
+          url = role === 'manager'
             ? `${BaseUrl}/api/manager/subscriptions`
             : `${BaseUrl}/api/organization/subscriptions`;
         }
@@ -842,7 +842,7 @@ const BudgetAnalysis = () => {
   const calculatePercentageIncrease = (current, previous) => {
     if (previous === 0) return '100% increase';
     const increase = ((current - previous) / previous) * 100;
-    return increase > 0 ? `${increase.toFixed(1)}% increase` : `${Math.abs(increase).toFixed(1)}% decrease`;
+    return increase > 0 ? `${!isNaN(Number(increase)) ? Number(increase).toFixed(1) : 'N/A'}% increase` : `${!isNaN(Number(increase)) ? Math.abs(Number(increase)).toFixed(1) : 'N/A'}% decrease`;
   };
 
   const renderTableHeaders = () => {
@@ -931,8 +931,8 @@ const BudgetAnalysis = () => {
           );
         case 'subscription_status':
           return (
-            <Box sx={{ 
-              display: 'flex', 
+            <Box sx={{
+              display: 'flex',
               flexDirection: 'column',
               gap: '8px',
               background: 'rgba(0, 0, 0, 0.02)',
@@ -952,7 +952,7 @@ const BudgetAnalysis = () => {
                   label={`${subscription.plan?.name || 'N/A'} (${subscription.subscriptionType === 'doctor-plan' ? 'Doctor Plan' : 'Portal Plan'})`}
                   size="small"
                   sx={{
-                    background: subscription.subscriptionType === 'doctor-plan' 
+                    background: subscription.subscriptionType === 'doctor-plan'
                       ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
                       : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
@@ -961,7 +961,7 @@ const BudgetAnalysis = () => {
                   }}
                 />
               </Box>
-              
+
               <Box sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -980,7 +980,7 @@ const BudgetAnalysis = () => {
                     borderRadius: '12px',
                   }}
                 >
-                  ${subscription.plan?.price?.toFixed(2) || 'N/A'}
+                  ${!isNaN(Number(subscription.plan?.price)) ? Number(subscription.plan?.price).toFixed(2) : 'N/A'}
                 </Typography>
               </Box>
 
@@ -994,7 +994,7 @@ const BudgetAnalysis = () => {
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
-                  <Typography variant="caption" sx={{ 
+                  <Typography variant="caption" sx={{
                     color: 'text.secondary',
                     display: 'flex',
                     alignItems: 'center',
@@ -1007,13 +1007,13 @@ const BudgetAnalysis = () => {
                     {format(new Date(subscription.startDate), 'MMM dd, yyyy')}
                   </Typography>
                 </Box>
-                
+
                 <Box sx={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
-                  <Typography variant="caption" sx={{ 
+                  <Typography variant="caption" sx={{
                     color: 'text.secondary',
                     display: 'flex',
                     alignItems: 'center',
@@ -1105,7 +1105,7 @@ const BudgetAnalysis = () => {
         case 'email':
           return subscription.clinician?.email || '-';
         case 'price':
-          return `$${subscription.price?.toFixed(2) || 'N/A'}`;
+          return `$${!isNaN(Number(subscription.price)) ? Number(subscription.price).toFixed(2) : 'N/A'}`;
         case 'subscription_period':
           return {
             startDate: subscription.startDate,
@@ -1135,7 +1135,7 @@ const BudgetAnalysis = () => {
         case 'email':
           return subscription.organization?.email || '-';
         case 'price':
-          return `$${subscription.price?.toFixed(2) || 'N/A'}`;
+          return `$${!isNaN(Number(subscription.price)) ? Number(subscription.price).toFixed(2) : 'N/A'}`;
         case 'subscription_period':
           return {
             startDate: subscription.startDate,
@@ -1164,9 +1164,9 @@ const BudgetAnalysis = () => {
             subscription.organization?.email || '-';
       case 'price':
         if (filter === 'patient') {
-          return `$${subscription.plan?.price?.toFixed(2) || 'N/A'}`;
+          return `$${!isNaN(Number(subscription.plan?.price)) ? Number(subscription.plan?.price).toFixed(2) : 'N/A'}`;
         } else {
-          return `$${subscription.price?.toFixed(2) || 'N/A'}`;
+          return `$${!isNaN(Number(subscription.price)) ? Number(subscription.price).toFixed(2) : 'N/A'}`;
         }
       case 'startDate':
         return new Date(subscription.startDate).toLocaleDateString();
@@ -1370,7 +1370,12 @@ const BudgetAnalysis = () => {
             <Container fluid>
               {/* First Row: Cards */}
               <Row className="mb-4">
-                <Box display="grid" gridTemplateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap={3}>
+                <Box
+                  display="grid"
+                  gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(auto-fit, minmax(220px, 1fr))' }}
+                  gap={{ xs: 2, sm: 3, md: 4 }}
+                  sx={{ width: '100%', minWidth: 0, mb: 2 }}
+                >
                   {sessionStorage.getItem('adminPortal') === 'true' ? (
                     <>
                       <ModernMetricCard gradient="linear-gradient(135deg, #1A2980 0%, #26D0CE 100%)">
@@ -1389,7 +1394,7 @@ const BudgetAnalysis = () => {
                             color: '#fff',
                             mb: 0.5
                           }}>
-                            ${adminMetrics?.patientEarnings?.toFixed(2) || '0.00'}
+                            ${!isNaN(Number(adminMetrics?.patientEarnings)) ? Number(adminMetrics?.patientEarnings).toFixed(2) : '0.00'}
                           </Typography>
                         </Box>
                         <Box sx={{
@@ -1424,7 +1429,7 @@ const BudgetAnalysis = () => {
                             color: '#fff',
                             mb: 0.5
                           }}>
-                            ${adminMetrics?.clinicianEarnings?.toFixed(2) || '0.00'}
+                            ${!isNaN(Number(adminMetrics?.clinicianEarnings)) ? Number(adminMetrics?.clinicianEarnings).toFixed(2) : '0.00'}
                           </Typography>
                         </Box>
                         <Box sx={{
@@ -1459,7 +1464,7 @@ const BudgetAnalysis = () => {
                             color: '#fff',
                             mb: 0.5
                           }}>
-                            ${adminMetrics?.organizationEarnings?.toFixed(2) || '0.00'}
+                            ${!isNaN(Number(adminMetrics?.organizationEarnings)) ? Number(adminMetrics?.organizationEarnings).toFixed(2) : '0.00'}
                           </Typography>
                         </Box>
                         <Box sx={{
@@ -1494,7 +1499,7 @@ const BudgetAnalysis = () => {
                             color: '#fff',
                             mb: 0.5
                           }}>
-                            ${(adminMetrics?.patientEarnings + adminMetrics?.clinicianEarnings + adminMetrics?.organizationEarnings)?.toFixed(2) || '0.00'}
+                            ${(!isNaN(Number(adminMetrics?.patientEarnings)) ? Number(adminMetrics?.patientEarnings) : 0 + !isNaN(Number(adminMetrics?.clinicianEarnings)) ? Number(adminMetrics?.clinicianEarnings) : 0 + !isNaN(Number(adminMetrics?.organizationEarnings)) ? Number(adminMetrics?.organizationEarnings) : 0).toFixed(2) || '0.00'}
                           </Typography>
                         </Box>
                         <Box sx={{
@@ -1531,7 +1536,7 @@ const BudgetAnalysis = () => {
                             color: '#fff',
                             mb: 0.5
                           }}>
-                            ${budgetData?.currentYearTotal?.toFixed(2) || '0.00'}
+                            ${!isNaN(Number(budgetData?.currentYearTotal)) ? Number(budgetData?.currentYearTotal).toFixed(2) : '0.00'}
                           </Typography>
                         </Box>
                         <Box sx={{
@@ -1555,116 +1560,127 @@ const BudgetAnalysis = () => {
               </Row>
 
               <Row className="mb-4">
-                <Col>
+                <Col xs={12}>
                   <Card className="mb-4" sx={{
                     borderRadius: '24px',
                     overflow: 'hidden',
                     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
                     background: 'white',
                     border: 'none',
+                    width: '100%',
+                    minWidth: 0,
                   }}>
                     <Box sx={{
                       borderRadius: '24px',
                       overflow: 'hidden',
                       background: 'white',
+                      width: '100%',
+                      minWidth: 0,
                     }}>
                       <Card.Header style={{
                         background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
                         color: 'white',
                         padding: '10px',
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: '12px',
                         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
                         position: 'relative',
                         zIndex: 1,
                         border: 'none',
                       }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                        }}>
-                          <Icon
-                            path={mdiChartLine}
-                            size={1.5}
-                            color="white"
-                            style={{
-                              background: 'rgba(255, 255, 255, 0.1)',
-                              padding: '8px',
-                              borderRadius: '12px',
-                            }}
-                          />
-                          <span style={{
-                            fontSize: '1.25rem',
-                            fontWeight: '600',
-                            letterSpacing: '0.5px',
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%', justifyContent: 'space-between' }}>
+                          <Box sx={{
+                            display: 'flex',
+                            gap: 2,
+                            alignItems: 'center'
                           }}>
-                            Earning Analysis Overview
-                          </span>
-                        </div>
-                        <div className="d-flex gap-3">
-                          <LocalizationProvider dateAdapter={AdapterDateFns}>
-                            <StyledDatePicker
-                              label="Start Date"
-                              value={startDate}
-                              onChange={(newValue) => setStartDate(newValue)}
-                              slotProps={{
-                                textField: {
-                                  size: 'small',
-                                  variant: 'outlined',
-                                  InputLabelProps: {
-                                    shrink: true,
-                                  },
-                                  sx: {
-                                    width: '140px',
-                                    '& .MuiInputLabel-root': {
-                                      color: 'rgba(255, 255, 255, 0.7)',
-                                    }
-                                  }
-                                },
-                                inputAdornment: {
-                                  style: { marginRight: '-8px' }
-                                }
+                            <Icon
+                              path={mdiChartLine}
+                              size={1.5}
+                              color="white"
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                padding: '8px',
+                                borderRadius: '12px',
                               }}
                             />
+                            <Typography  sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, fontWeight: 600, letterSpacing: '0.5px' }}>
+                              Earning Analysis Overview
+                            </Typography>
+                          </Box>
+                          {/* <Box sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            gap: 2,
+                            width: '100%',
+                            alignItems: { xs: 'flex-start', sm: 'center' },
+                            justifyContent: { sm: 'flex-end' },
+                          }}> */}
+                          <Box sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            gap: 2,
+                            
+                          }}>
+                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                              <StyledDatePicker
+                                label="Start Date"
+                                value={startDate}
+                                onChange={(newValue) => setStartDate(newValue)}
+                                slotProps={{
+                                  textField: {
+                                    size: 'small',
+                                    variant: 'outlined',
+                                    InputLabelProps: { shrink: true },
+                                    sx: {
+                                      width: { xs: '100%', sm: '140px' },
+                                      mb: { xs: 1, sm: 0 },
+                                      '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                                    },
+                                  },
+                                  inputAdornment: { style: { marginRight: '-8px' } },
+                                }}
+                              />
+                              <StyledDatePicker
+                                label="End Date"
+                                value={endDate}
+                                onChange={(newValue) => setEndDate(newValue)}
+                                slotProps={{
+                                  textField: {
+                                    size: 'small',
+                                    variant: 'outlined',
+                                    InputLabelProps: { shrink: true },
+                                    sx: {
+                                      width: { xs: '100%', sm: '140px' },
+                                      mb: { xs: 1, sm: 0 },
+                                      '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                                    },
+                                  },
+                                  inputAdornment: { style: { marginRight: '-8px' } },
+                                }}
+                              />
+                            </LocalizationProvider>
+                          </Box>
+                        </Box>
 
-                            <StyledDatePicker
-                              label="End Date"
-                              value={endDate}
-                              onChange={(newValue) => setEndDate(newValue)}
-                              slotProps={{
-                                textField: {
-                                  size: 'small',
-                                  variant: 'outlined',
-                                  InputLabelProps: {
-                                    shrink: true,
-                                  },
-                                  sx: {
-                                    width: '140px',
-                                    '& .MuiInputLabel-root': {
-                                      color: 'rgba(255, 255, 255, 0.7)',
-                                    }
-                                  }
-                                },
-                                inputAdornment: {
-                                  style: { marginRight: '-8px' }
-                                }
-                              }}
-                            />
-                          </LocalizationProvider>
-                        </div>
                       </Card.Header>
                       <Card.Body style={{
                         background: 'white',
                         padding: '24px',
+                        width: '100%',
+                        minWidth: 0,
                       }}>
-                        <ReactApexChart
-                          options={chartOptions}
-                          series={chartSeries}
-                          type="bar"
-                          height={350}
-                        />
+                        <Box sx={{ width: '100%', minWidth: 0, overflowX: 'auto' }}>
+                          <ReactApexChart
+                            options={chartOptions}
+                            series={chartSeries}
+                            type="bar"
+                            height={350}
+                            width="100%"
+                          />
+                        </Box>
                       </Card.Body>
                     </Box>
                   </Card>
@@ -1672,20 +1688,24 @@ const BudgetAnalysis = () => {
               </Row>
 
               <Row>
-                <Col>
-                  <StyledTableContainer component={Paper} className="p-0" sx={{ position: 'relative' }}>
-                    <TableHeaderBox>
+                <Col xs={12}>
+                  <StyledTableContainer component={Paper} className="p-0" sx={{ position: 'relative', width: '100%', minWidth: 0 }}>
+                    <TableHeaderBox sx={{
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      alignItems: { xs: 'flex-start', sm: 'center' },
+                      gap: { xs: 2, sm: 3 },
+                    }}>
                       <Box sx={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: 3,
-                        position: 'relative',
-                        zIndex: 1
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: { xs: 'flex-start', sm: 'center' },
+                        gap: { xs: 1, sm: 3 },
+                        width: '100%',
                       }}>
-                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                           Earning Details
                         </Typography>
-                        <SearchContainer>
+                        <SearchContainer sx={{ width: { xs: '100%', sm: '300px' } }}>
                           <Icon
                             path={mdiMagnify}
                             size={0.9}
@@ -1736,16 +1756,13 @@ const BudgetAnalysis = () => {
                             </Box>
                           )}
                         </SearchContainer>
-
                         <Box
                           sx={{
-                            position: 'absolute',
-                            bottom: '-10px',
-                            left: '350px',
+                            position: 'static',
                             color: 'rgba(255, 255, 255, 0.6)',
                             fontSize: '0.75rem',
                             fontStyle: 'italic',
-                            display: 'flex',
+                            display: { xs: 'none', sm: 'flex' },
                             alignItems: 'center',
                             gap: 1,
                             opacity: searchQuery ? 1 : 0,
@@ -1759,17 +1776,22 @@ const BudgetAnalysis = () => {
                           />
                           {`Found ${getFilteredSubscriptions().length} results`}
                         </Box>
-
                       </Box>
-                      <Box 
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        width: '43%',
-                      }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          gap: { xs: 1, sm: 2 },
+                          width: { xs: '100%', sm: 'auto' },
+                          mt: { xs: 2, sm: 0 },
+                          alignItems: { xs: 'stretch', sm: 'center' },
+                          justifyContent: { sm: 'flex-end' },
+                        }}
+                      >
                         <DownloadButton
                           onClick={() => downloadCSV(getFilteredSubscriptions(), renderTableHeaders())}
                           startIcon={<Icon path={mdiDownload} size={0.9} />}
+                          sx={{ width: { xs: '100%', sm: 'auto' } }}
                         >
                           Download CSV
                         </DownloadButton>
@@ -1782,11 +1804,13 @@ const BudgetAnalysis = () => {
                             bgcolor: 'rgba(255, 255, 255, 0.1)',
                             borderRadius: '12px',
                             padding: '4px',
+                            width: { xs: '100%', sm: 'auto' },
                             '& .MuiToggleButton-root': {
                               color: 'white',
                               border: 'none',
                               borderRadius: '8px',
                               mx: 0.5,
+                              width: { xs: '100%', sm: 'auto' },
                               '&.Mui-selected': {
                                 bgcolor: 'rgba(255, 255, 255, 0.2)',
                                 color: 'white',
@@ -1809,165 +1833,167 @@ const BudgetAnalysis = () => {
                         </ToggleButtonGroup>
                       </Box>
                     </TableHeaderBox>
-                    <StyledTable>
-                      <StyledTableHead>
-                        <TableRow>
-                          {renderTableHeaders().map((header) => (
-                            <StyledHeaderCell key={header.id} align={header.align}>
-                              {header.label}
-                            </StyledHeaderCell>
-                          ))}
-                        </TableRow>
-                      </StyledTableHead>
-                      <TableBody>
-                        {getFilteredSubscriptions()
-                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                          .map((subscription, index) => (
-                            <StyledTableRow key={subscription._id}>
-                              {renderTableHeaders().map((header) => (
-                                <StyledTableCell key={header.id} align={header.align}>
-                                  {header.id === 'name' && filter === 'clinician' ? (
-                                    <UserInfoCell>
-                                      {renderTableCell(subscription, header).image ? (
-                                        <StyledAvatar
-                                          src={renderTableCell(subscription, header).image}
-                                          alt={renderTableCell(subscription, header).name}
-                                          variant="rounded"
-                                        />
-                                      ) : (
-                                        <StyledAvatar variant="rounded">
-                                          {renderTableCell(subscription, header).name.charAt(0)}
-                                        </StyledAvatar>
-                                      )}
-                                      <Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                          {renderTableCell(subscription, header).title} {renderTableCell(subscription, header).name}
-                                        </Typography>
-                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                          {subscription.clinician?.qualification || 'Medical Professional'}
-                                        </Typography>
-                                      </Box>
-                                    </UserInfoCell>
-                                  ) : header.id === 'name' && filter === 'organization' ? (
-                                    <UserInfoCell>
-                                      {renderTableCell(subscription, header).image ? (
-                                        <StyledAvatar
-                                          src={renderTableCell(subscription, header).image}
-                                          alt={renderTableCell(subscription, header).name}
-                                          variant="rounded"
-                                          sx={{ width: 50, height: 50 }}
-                                        />
-                                      ) : (
-                                        <StyledAvatar
-                                          variant="rounded"
+                    <Box sx={{ width: '100%', minWidth: 0, overflowX: 'auto' }}>
+                      <StyledTable sx={{ minWidth: 700 }}>
+                        <StyledTableHead>
+                          <TableRow>
+                            {renderTableHeaders().map((header) => (
+                              <StyledHeaderCell key={header.id} align={header.align}>
+                                {header.label}
+                              </StyledHeaderCell>
+                            ))}
+                          </TableRow>
+                        </StyledTableHead>
+                        <TableBody>
+                          {getFilteredSubscriptions()
+                            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            .map((subscription, index) => (
+                              <StyledTableRow key={subscription._id}>
+                                {renderTableHeaders().map((header) => (
+                                  <StyledTableCell key={header.id} align={header.align}>
+                                    {header.id === 'name' && filter === 'clinician' ? (
+                                      <UserInfoCell>
+                                        {renderTableCell(subscription, header).image ? (
+                                          <StyledAvatar
+                                            src={renderTableCell(subscription, header).image}
+                                            alt={renderTableCell(subscription, header).name}
+                                            variant="rounded"
+                                          />
+                                        ) : (
+                                          <StyledAvatar variant="rounded">
+                                            {renderTableCell(subscription, header).name.charAt(0)}
+                                          </StyledAvatar>
+                                        )}
+                                        <Box>
+                                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            {renderTableCell(subscription, header).title} {renderTableCell(subscription, header).name}
+                                          </Typography>
+                                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                            {subscription.clinician?.qualification || 'Medical Professional'}
+                                          </Typography>
+                                        </Box>
+                                      </UserInfoCell>
+                                    ) : header.id === 'name' && filter === 'organization' ? (
+                                      <UserInfoCell>
+                                        {renderTableCell(subscription, header).image ? (
+                                          <StyledAvatar
+                                            src={renderTableCell(subscription, header).image}
+                                            alt={renderTableCell(subscription, header).name}
+                                            variant="rounded"
+                                            sx={{ width: 50, height: 50 }}
+                                          />
+                                        ) : (
+                                          <StyledAvatar
+                                            variant="rounded"
+                                            sx={{
+                                              width: 50,
+                                              height: 50,
+                                              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
+                                            }}
+                                          >
+                                            {renderTableCell(subscription, header).name.charAt(0)}
+                                          </StyledAvatar>
+                                        )}
+                                        <Box>
+                                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            {renderTableCell(subscription, header).name}
+                                          </Typography>
+                                          <Typography variant="caption" sx={{
+                                            color: 'text.secondary',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                          }}>
+                                            <FaBuilding size={10} />
+                                            {renderTableCell(subscription, header).companyName}
+                                          </Typography>
+                                        </Box>
+                                      </UserInfoCell>
+                                    ) : header.id === 'subscription_period' ? (
+                                      <DateContainer>
+                                        <Box>
+                                          <DateLabel>
+                                            <FaCalendarPlus size={12} />
+                                            Start Date
+                                          </DateLabel>
+                                          <DateValue>
+                                            {new Date(renderTableCell(subscription, header).startDate).toLocaleDateString()}
+                                          </DateValue>
+                                        </Box>
+                                        <Box>
+                                          <DateLabel>
+                                            <FaCalendarMinus size={12} />
+                                            End Date
+                                          </DateLabel>
+                                          <DateValue>
+                                            {new Date(renderTableCell(subscription, header).endDate).toLocaleDateString()}
+                                          </DateValue>
+                                        </Box>
+                                      </DateContainer>
+                                    ) : header.id === 'clinicians' ? (
+                                      <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        justifyContent: 'center'
+                                      }}>
+                                        <FaUserMd size={16} color={theme.palette.primary.main} />
+                                        <Typography
+                                          variant="body2"
                                           sx={{
-                                            width: 50,
-                                            height: 50,
-                                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
+                                            fontWeight: 600,
+                                            background: alpha(theme.palette.primary.main, 0.1),
+                                            padding: '0.4rem 0.8rem',
+                                            borderRadius: '20px',
+                                            minWidth: '60px',
+                                            textAlign: 'center'
                                           }}
                                         >
-                                          {renderTableCell(subscription, header).name.charAt(0)}
-                                        </StyledAvatar>
-                                      )}
-                                      <Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                          {renderTableCell(subscription, header).name}
-                                        </Typography>
-                                        <Typography variant="caption" sx={{
-                                          color: 'text.secondary',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '4px'
-                                        }}>
-                                          <FaBuilding size={10} />
-                                          {renderTableCell(subscription, header).companyName}
+                                          {renderTableCell(subscription, header)}
                                         </Typography>
                                       </Box>
-                                    </UserInfoCell>
-                                  ) : header.id === 'subscription_period' ? (
-                                    <DateContainer>
-                                      <Box>
-                                        <DateLabel>
-                                          <FaCalendarPlus size={12} />
-                                          Start Date
-                                        </DateLabel>
-                                        <DateValue>
-                                          {new Date(renderTableCell(subscription, header).startDate).toLocaleDateString()}
-                                        </DateValue>
-                                      </Box>
-                                      <Box>
-                                        <DateLabel>
-                                          <FaCalendarMinus size={12} />
-                                          End Date
-                                        </DateLabel>
-                                        <DateValue>
-                                          {new Date(renderTableCell(subscription, header).endDate).toLocaleDateString()}
-                                        </DateValue>
-                                      </Box>
-                                    </DateContainer>
-                                  ) : header.id === 'clinicians' ? (
-                                    <Box sx={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: 1,
-                                      justifyContent: 'center'
-                                    }}>
-                                      <FaUserMd size={16} color={theme.palette.primary.main} />
+                                    ) : header.id === 'founder' ? (
+                                      <Chip
+                                        label={renderTableCell(subscription, header)}
+                                        size="small"
+                                        sx={{
+                                          background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
+                                          color: 'white',
+                                          fontWeight: 500,
+                                          padding: '10px 5px',
+                                        }}
+                                      />
+                                    ) : header.id === 'renewal' ? (
+                                      <StatusChip
+                                        label={renderTableCell(subscription, header) ? 'Active' : 'Inactive'}
+                                        status={renderTableCell(subscription, header) ? 'Active' : 'Inactive'}
+                                      />
+                                    ) : header.id === 'price' ? (
                                       <Typography
                                         variant="body2"
                                         sx={{
                                           fontWeight: 600,
-                                          background: alpha(theme.palette.primary.main, 0.1),
-                                          padding: '0.4rem 0.8rem',
+                                          color: theme.palette.success.main,
+                                          background: alpha(theme.palette.success.main, 0.1),
+                                          padding: '0.5rem 1rem',
                                           borderRadius: '20px',
-                                          minWidth: '60px',
-                                          textAlign: 'center'
+                                          display: 'inline-block'
                                         }}
                                       >
                                         {renderTableCell(subscription, header)}
                                       </Typography>
-                                    </Box>
-                                  ) : header.id === 'founder' ? (
-                                    <Chip
-                                      label={renderTableCell(subscription, header)}
-                                      size="small"
-                                      sx={{
-                                        background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-                                        color: 'white',
-                                        fontWeight: 500,
-                                        padding: '10px 5px',
-                                      }}
-                                    />
-                                  ) : header.id === 'renewal' ? (
-                                    <StatusChip
-                                      label={renderTableCell(subscription, header) ? 'Active' : 'Inactive'}
-                                      status={renderTableCell(subscription, header) ? 'Active' : 'Inactive'}
-                                    />
-                                  ) : header.id === 'price' ? (
-                                    <Typography
-                                      variant="body2"
-                                      sx={{
-                                        fontWeight: 600,
-                                        color: theme.palette.success.main,
-                                        background: alpha(theme.palette.success.main, 0.1),
-                                        padding: '0.5rem 1rem',
-                                        borderRadius: '20px',
-                                        display: 'inline-block'
-                                      }}
-                                    >
-                                      {renderTableCell(subscription, header)}
-                                    </Typography>
-                                  ) : (
-                                    <Typography variant="body2">
-                                      {renderTableCell(subscription, header)}
-                                    </Typography>
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          ))}
-                      </TableBody>
-                    </StyledTable>
+                                    ) : (
+                                      <Typography variant="body2">
+                                        {renderTableCell(subscription, header)}
+                                      </Typography>
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            ))}
+                        </TableBody>
+                      </StyledTable>
+                    </Box>
                     <TablePagination
                       rowsPerPageOptions={[5, 10, 25]}
                       component="div"
@@ -1976,6 +2002,16 @@ const BudgetAnalysis = () => {
                       page={page}
                       onPageChange={handleChangePage}
                       onRowsPerPageChange={handleChangeRowsPerPage}
+                      sx={{
+                        '.MuiTablePagination-toolbar': {
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          alignItems: { xs: 'flex-start', sm: 'center' },
+                          gap: { xs: 1, sm: 2 },
+                        },
+                        '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                          fontSize: { xs: '0.85rem', sm: '1rem' },
+                        },
+                      }}
                     />
                   </StyledTableContainer>
                 </Col>

@@ -1012,6 +1012,17 @@ export default function Component() {
   };
 
   const handleEditClick = (user) => {
+    let formattedDOB = '';
+    if (user.dateOfBirth) {
+      const d = new Date(user.dateOfBirth);
+      if (!isNaN(d)) {
+        formattedDOB = d.toISOString().split('T')[0];
+      } else {
+        formattedDOB = '';
+      }
+    } else {
+      formattedDOB = new Date().toISOString().split('T')[0];
+    }
     setEditingPatient({
       id: user.id,
       userName: user.name,
@@ -1019,7 +1030,7 @@ export default function Component() {
       mobile: user.mobile,
       guardian: user.guardian || '',
       location: user.location || '',
-      dateOfBirth: user.dateOfBirth || new Date().toISOString().split('T')[0],
+      dateOfBirth: formattedDOB,
       address: user.address || {
         latitude: 40.7128,
         longitude: -74.0060
