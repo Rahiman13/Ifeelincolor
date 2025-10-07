@@ -1,7 +1,7 @@
 Ifeelincolor Web panel Creds for all roles
 
 Admin
-email: test@gmail.com
+email: test@test.com
 password: 123
 
 Assistant

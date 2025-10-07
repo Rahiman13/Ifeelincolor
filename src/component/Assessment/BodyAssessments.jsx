@@ -578,6 +578,27 @@ const MediaUploadBox = styled(Box)(({ theme }) => ({
   }
 }));
 
+// Common external body parts to quickly select from when creating a new body part
+const COMMON_BODY_PARTS = [
+  { partName: 'Head', description: 'Includes scalp, skull, and facial structures' },
+  { partName: 'Neck', description: 'Area connecting head to torso; cervical region' },
+  { partName: 'Shoulder', description: 'Glenohumeral joint and surrounding musculature' },
+  { partName: 'Arm', description: 'Upper limb between shoulder and elbow' },
+  { partName: 'Elbow', description: 'Hinge joint between arm and forearm' },
+  { partName: 'Forearm', description: 'Region between elbow and wrist' },
+  { partName: 'Wrist', description: 'Carpal region connecting forearm and hand' },
+  { partName: 'Hand', description: 'Palm, dorsum, and fingers' },
+  { partName: 'Chest', description: 'Thoracic region including ribs and sternum' },
+  { partName: 'Abdomen', description: 'Area between chest and pelvis' },
+  { partName: 'Back', description: 'Dorsal region including spine and muscles' },
+  { partName: 'Hip', description: 'Pelvic region and hip joint' },
+  { partName: 'Thigh', description: 'Region between hip and knee' },
+  { partName: 'Knee', description: 'Joint between thigh and leg' },
+  { partName: 'Leg', description: 'Region between knee and ankle' },
+  { partName: 'Ankle', description: 'Joint connecting leg and foot' },
+  { partName: 'Foot', description: 'Includes heel, arch, and toes' }
+];
+
 const BodyAssessments = () => {
   // Body Parts state
   const [bodyParts, setBodyParts] = useState([]);
@@ -1708,13 +1729,37 @@ const BodyAssessments = () => {
       </StyledDialogTitle>
       <StyledDialogContent>
         <div className="form-section mt-4">
+          {/* Quick select common body parts */}
+          {bodyPartModalMode === 'add' && (
+            <TextField
+              fullWidth
+              select
+              label="Quick Select Body Part"
+              value={newBodyPart.partName || ''}
+              onChange={(e) => {
+                const selected = COMMON_BODY_PARTS.find(p => p.partName === e.target.value);
+                if (selected) {
+                  setNewBodyPart({ partName: selected.partName, description: selected.description });
+                }
+              }}
+              sx={{ mb: 2 }}
+            >
+              {COMMON_BODY_PARTS.map((bp) => (
+                <MenuItem key={bp.partName} value={bp.partName}>
+                  {bp.partName}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
           <TextField
             fullWidth
-            label="Part Name"
+            label="Body Part Name"
             name="partName"
             value={bodyPartModalMode === 'add' ? newBodyPart.partName : selectedBodyPart?.partName || ''}
             onChange={handleBodyPartInputChange}
             disabled={bodyPartModalMode === 'view'}
+            placeholder={bodyPartModalMode === 'add' ? 'e.g., Shoulder' : undefined}
+            helperText={bodyPartModalMode === 'add' ? 'Pick from Quick Select above or type a custom name.' : ''}
             InputLabelProps={{
               sx: {
                 color: '#64748b',
@@ -1726,13 +1771,15 @@ const BodyAssessments = () => {
           />
           <TextField
             fullWidth
-            label="Description"
+            label="Short Description"
             name="description"
             multiline
             rows={4}
             value={bodyPartModalMode === 'add' ? newBodyPart.description : selectedBodyPart?.description || ''}
             onChange={handleBodyPartInputChange}
             disabled={bodyPartModalMode === 'view'}
+            placeholder={bodyPartModalMode === 'add' ? 'e.g., Joint connecting upper limb to torso' : undefined}
+            helperText={bodyPartModalMode === 'add' ? 'Optional: provide a short description.' : ''}
             InputLabelProps={{
               sx: {
                 color: '#64748b',
